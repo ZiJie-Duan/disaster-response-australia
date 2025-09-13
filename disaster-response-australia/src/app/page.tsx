@@ -1,103 +1,190 @@
+"use client";
+
+import React from "react";
 import Image from "next/image";
+import { AlertTriangle, CheckCircle2, Search, Maximize2 } from "lucide-react";
 
-export default function Home() {
+/**
+ * Next.js (App Router) 单文件页面占位实现
+ * - 所有数据位留白（以“—”显示），以后直接替换 DATA 对象或接入 API 即可
+ * - 地图区域留出 <div id="map"/> 容器，后续自行接入任意地图 SDK（Mapbox/Leaflet/ArcGIS/高德/百度等）
+ * - 使用 Tailwind CSS 进行样式（建议在项目中已启用 Tailwind）
+ *
+ * 使用方法：
+ * 1) 在 app/ 目录下新建 (dashboard)/page.tsx 或直接作为 app/page.tsx 使用
+ * 2) 接入地图：在 MapCard 的 <div id="map"/> 中挂载你自己的地图实例
+ * 3) 对接数据：将 DATA 替换成你的 API 返回值或 Server Actions
+ */
+
+// ====== 占位数据（全部可替换） ======
+const DATA = {
+  activeAreaName: "", // 例如 "Whitehorse"
+  resolvedAreas: "", // 例如 2
+  affectedPopulation: "", // 例如 4513
+  survivorsWithGps: "", // 例如 42
+  latestReleases: [] as { title: string; href?: string }[],
+};
+
+// 一个小工具：把空值显示为 "—"
+const asPlaceholder = (v: React.ReactNode) => (v === undefined || v === null || v === "" ? "—" : v);
+
+export default function DashboardPage() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <main className="min-h-screen bg-background text-foreground">
+      {/* 顶部导航 */}
+      <header className="bg-[#0C1E3B] text-white">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          {/* 左侧 Logo 与标题 */}
+          <div className="flex items-center gap-3">
+            <Image src="/logo.svg" alt="Disaster Response Australia Logo" width={80} height={80} />
+            <div>
+              <div className="text-xs uppercase tracking-widest opacity-80">Disaster Response</div>
+              <div className="text-lg font-semibold -mt-0.5">Australia</div>
+            </div>
+          </div>
+          {/* 右侧操作区 */}
+          <div className="flex items-center gap-3">
+            <a
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur hover:bg-white/15"
+              href="#"
+            >
+              🏛️ Sign up (for government)
+            </a>
+            <a
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur hover:bg-white/15"
+              href="#"
+            >
+              🛟 Sign up (for rescuer)
+            </a>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+      </header>
+
+      {/* 指标卡片 */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <StatCard title="Active Disaster Areas" value={asPlaceholder(DATA.activeAreaName)} />
+        <StatCard title="Resolved Areas" value={asPlaceholder(DATA.resolvedAreas)} />
+        <StatCard title="Estimated Affected Population" value={asPlaceholder(DATA.affectedPopulation)} />
+        <StatCard title="Survivors Sharing GPS Total" value={asPlaceholder(DATA.survivorsWithGps)} />
+      </section>
+
+      {/* 主体布局 */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-6 grid grid-cols-1 xl:grid-cols-[360px_minmax(0,1fr)] gap-6 pb-10">
+        {/* 左侧：Latest Release */}
+        <aside className="rounded-2xl bg-card shadow-sm ring-1 ring-border overflow-hidden">
+          <div className="bg-[#0C1E3B] text-white px-4 py-3 text-base font-semibold">Latest Release</div>
+          <div className="p-0 divide-y divide-border">
+            {DATA.latestReleases.length === 0 ? (
+              <EmptyReleaseList />
+            ) : (
+              <ul className="flex flex-col">
+                {DATA.latestReleases.map((it, idx) => (
+                  <li key={idx} className="px-4 py-3 hover:bg-secondary">
+                    {it.href ? (
+                      <a className="text-sm text-card-foreground underline" href={it.href}>
+                        {it.title}
+                      </a>
+                    ) : (
+                      <span className="text-sm text-card-foreground">{it.title}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </aside>
+
+        {/* 右侧：地图卡片 */}
+        <MapCard />
+      </section>
+    </main>
+  );
+}
+
+// ====== 组件区域 ======
+function StatCard({ title, value }: { title: string; value: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl bg-card shadow-sm ring-1 ring-border p-5">
+      <div className="text-sm text-muted-foreground">{title}</div>
+      <div className="mt-1 text-3xl font-bold tracking-tight">{value}</div>
+    </div>
+  );
+}
+
+function EmptyReleaseList() {
+  // 空状态：展示 3 条骨架占位
+  return (
+    <div className="px-4 py-6">
+      <p className="text-sm text-muted-foreground mb-3">暂无更新，发布内容将显示在此处。</p>
+      <ul className="space-y-2">
+        {[1, 2, 3].map((i) => (
+          <li key={i} className="h-10 w-full rounded-md bg-muted animate-pulse" />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function MapCard() {
+  return (
+    <div className="relative rounded-2xl bg-card shadow-sm ring-1 ring-border overflow-hidden">
+      {/* 顶部过滤条 */}
+      <div className="absolute right-4 top-4 z-10 flex flex-col gap-3 w-72 max-w-[90vw]">
+        <SelectLike label="Disaster Type" />
+        <SelectLike label="Rescue Status" />
+        <div className="flex items-center gap-2 rounded-xl bg-popover/90 ring-1 ring-border px-3 py-2 shadow-sm">
+          <input
+            type="text"
+            placeholder="Area Search"
+            className="w-full bg-transparent placeholder:text-muted-foreground focus:outline-none text-sm"
+            disabled
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          <Search className="h-4 w-4 text-muted-foreground" />
+        </div>
+      </div>
+
+      {/* 地图容器 */}
+      <div className="h-[640px] bg-secondary">
+        <div
+          id="map"
+          className="h-full w-full grid place-items-center border-2 border-dashed border-border"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <div className="text-center">
+            <div className="text-sm text-muted-foreground">地图容器（占位）</div>
+            <div className="text-xs text-muted-foreground mt-1">在此处挂载你的地图 API（Mapbox/Leaflet/高德/百度/ArcGIS 等）</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 左下角图例 */}
+      <div className="absolute left-4 bottom-4 z-10 rounded-xl bg-popover/90 ring-1 ring-border px-3 py-2 shadow">
+        <div className="flex items-center gap-2 text-sm">
+          <AlertTriangle className="h-4 w-4" />
+          <span>Disaster area</span>
+        </div>
+        <div className="mt-1 flex items-center gap-2 text-sm">
+          <CheckCircle2 className="h-4 w-4" />
+          <span>Safe area</span>
+        </div>
+      </div>
+
+      {/* 右下角全屏按钮（占位） */}
+      <button
+        type="button"
+        className="absolute right-4 bottom-4 z-10 rounded-xl bg-popover/90 ring-1 ring-border p-2 shadow hover:bg-popover"
+        aria-label="Toggle full screen"
+      >
+        <Maximize2 className="h-5 w-5" />
+      </button>
+    </div>
+  );
+}
+
+function SelectLike({ label }: { label: string }) {
+  return (
+    <div className="flex items-center justify-between rounded-xl bg-popover/90 ring-1 ring-border px-3 py-2 shadow-sm">
+      <span className="text-sm text-popover-foreground">{label}</span>
+      <span className="text-xs text-muted-foreground">（占位）</span>
     </div>
   );
 }
