@@ -1,0 +1,230 @@
+.page {
+  /* 主题变量（局部作用域即可） */
+  --bg: #0b0c10;
+  --panel: #0f1e3a;
+  --panel2: #0c172e;
+  --panel3: #142746;
+  --text: #f5f6fa;
+  --muted: #c4cbe2;
+  --accent: #2b5aa7;
+  --blueBtn: #0a64a4;
+  --shadow: 0 12px 28px rgba(0,0,0,0.35);
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  display: grid;
+  grid-template-columns: 260px 1fr;
+}
+
+/* 左侧栏 */
+.sidebar {
+  background: linear-gradient(180deg, #0e1d39, #0b162b);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  padding: 24px 18px;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 20px;
+}
+
+.sideTitle {
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.6px;
+  opacity: 0.95;
+}
+
+.createBtn {
+  background: #1377c5;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-weight: 700;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+
+.areaList {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.emptyMessage {
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+}
+
+.areaItem {
+  text-align: left;
+  width: 100%;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+}
+
+.areaItem:hover { background: rgba(255,255,255,0.04); }
+.areaItemActive {
+  background: #15294a;
+  border-color: rgba(255,255,255,0.08);
+}
+.areaName { font-weight: 700; }
+.areaStatus { color: var(--muted); font-size: 13px; margin-top: 2px; }
+
+/* 右侧主区域 */
+.main { padding: 22px 22px 28px; }
+
+/* 顶部 */
+.topbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.toolbar {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 18px;
+  justify-content: start;
+}
+
+.toolbarBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: #0b223d;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  color: #eaf0ff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+.toolbarIcon { display: inline-grid; place-items: center; }
+
+.userCluster { display: inline-flex; align-items: center; gap: 12px; }
+.bell {
+  position: relative;
+  height: 40px; width: 40px;
+  display: inline-grid; place-items: center;
+  background: #0b223d;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  color: #fff;
+}
+.userName { color: #e8edff; }
+
+/* 地图卡片 */
+.mapCard {
+  position: relative;
+  background: #101522;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.mapSurface {
+  height: 520px;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px),
+    linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
+    #ffffff;
+  background-size: 80px 80px, 80px 80px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 中部设备气泡（位置固定，仅占位） */
+.deviceBubble {
+  position: absolute;
+  left: 44%;
+  top: 38%;
+  transform: translate(-50%, -50%);
+  background: #2c5896;
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  min-width: 220px;
+}
+.deviceBubbleTitle {
+  font-weight: 800; margin-bottom: 4px;
+}
+.deviceBubbleLine { opacity: 0.95; }
+
+/* 右下角白色停靠面板 */
+.dockPanel {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  width: 260px;
+  background: #ffffff;
+  color: #0b0c10;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 16px;
+  padding: 14px 12px;
+  box-shadow: var(--shadow);
+}
+
+.dockTitle { font-weight: 800; margin-bottom: 10px; }
+.deviceList { list-style: none; margin: 0; padding: 0; }
+.deviceItem {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 8px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  font-size: 14px;
+}
+.deviceItem:last-child { border-bottom: none; }
+.emptyListItem {
+  padding: 16px 8px;
+  text-align: center;
+  color: rgba(11,12,16,0.6);
+  font-size: 13px;
+}
+.tick { font-weight: 900; }
+
+.legend { display: grid; gap: 8px; padding-top: 10px; }
+.legendRow { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+.legendDot {
+  width: 12px; height: 12px; border-radius: 4px;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+
+/* 底部详情条 */
+.detailBar {
+  margin-top: 16px;
+  background: #152a4c;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px 24px;
+  align-items: center;
+}
+.detailTitle { font-weight: 900; letter-spacing: 0.6px; }
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px 16px;
+}
+.detailItem {}
+.detailLabel { color: #c3cee6; font-size: 13px; margin-bottom: 4px; }
+.detailValue { font-weight: 800; }

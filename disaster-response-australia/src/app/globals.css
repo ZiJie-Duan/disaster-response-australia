@@ -21,6 +21,16 @@
   --input: #e4e4e7;
   --ring: #09090b;
   --radius: 0.5rem;
+  --console-bg: #0b0c10;
+  --console-panel: #0f1a2b;
+  --console-panel-secondary: #0c1320;
+  --console-panel-light: #152446;
+  --console-text: #f5f6fa;
+  --console-muted: #bfc6d9;
+  --console-primary: #7aa2ff;
+  --console-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --console-radius-lg: 20px;
+  --console-radius-md: 16px;
 }
 
 @media (prefers-color-scheme: dark) {
