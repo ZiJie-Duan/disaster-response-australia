@@ -133,7 +133,7 @@ export default function DisasterAreaManagementPage() {
             <ToolbarButton label="Add Area" onClick={handleAddArea}>
               <PlusIcon />
             </ToolbarButton>
-            <ToolbarButton label="Delete" onClick={handleDelete}>
+            <ToolbarButton label="Delete" onClick={handleDelete} variant="danger">
               <TrashIcon />
             </ToolbarButton>
           </div>
@@ -206,13 +206,20 @@ function ToolbarButton({
   label,
   onClick,
   children,
+  variant = 'default',
 }: {
   label: string;
   onClick?: () => void;
   children: React.ReactNode;
+  variant?: 'default' | 'danger';
 }) {
+  const buttonClass =
+    variant === 'danger'
+      ? `${styles.toolbarBtn} ${styles.toolbarBtnDanger}`
+      : styles.toolbarBtn;
+
   return (
-    <button className={styles.toolbarBtn} onClick={onClick}>
+    <button className={buttonClass} onClick={onClick}>
       <span className={styles.toolbarIcon}>{children}</span>
       <span>{label}</span>
     </button>

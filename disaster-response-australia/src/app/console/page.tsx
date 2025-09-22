@@ -105,6 +105,7 @@ export default function RescuerConsolePage() {
               <div className={styles.demoBadge} style={{ left: 140, top: 210 }}>Medical</div>
               <div className={styles.demoBadge} style={{ left: 210, top: 290 }}>Safe</div>
               */}
+              <StatusActionPanel />
             </div>
           </div>
         </section>
@@ -156,4 +157,48 @@ function EmptyAlertState() {
 
 function metricValue(value?: number | string): ReactNode {
   return value === undefined || value === null || value === '' ? '—' : value;
+}
+
+function StatusActionPanel() {
+  return (
+    <div className={styles.statusPanel} aria-label="Status quick actions">
+      <div className={styles.statusItem}>
+        <SafeIcon />
+        <span>Safe</span>
+      </div>
+      <div className={styles.statusItem}>
+        <MedicalIcon />
+        <span>Medical</span>
+      </div>
+      <div className={styles.statusItem}>
+        <SosIcon />
+        <span>SOS</span>
+      </div>
+    </div>
+  );
+}
+
+/* 简单的内联SVG图标，避免装依赖 */
+function SafeIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+function MedicalIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="4">
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+function SosIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2"/>
+      <text x="12" y="14" fontSize="8" textAnchor="middle" fill="currentColor">SOS</text>
+    </svg>
+  );
 }

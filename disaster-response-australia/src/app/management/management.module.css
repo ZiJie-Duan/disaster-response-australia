@@ -276,6 +276,20 @@
   cursor: pointer;
   box-shadow: var(--mgmt-shadow);
 }
+
+.toolbarBtn:hover {
+  background-color: var(--mgmt-primary-btn);
+}
+
+.toolbarBtnDanger:hover {
+  background-color: color-mix(in srgb, var(--destructive) 85%, #000);
+}
+
+.toolbarBtnDanger {
+  --mgmt-toolbar-bg: var(--destructive);
+  border: 1px solid var(--mgmt-toolbar-border);
+}
+
 .toolbarIcon { display: inline-grid; place-items: center; }
 
 .userCluster { display: inline-flex; align-items: center; gap: 12px; }
