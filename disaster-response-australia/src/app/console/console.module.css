@@ -52,7 +52,6 @@
   box-sizing: border-box;
 }
 
-:global(:root:not([data-theme])) .page,
 :global(:root[data-theme="light"]) .page {
   --console-bg: #dfe3ec;
   --console-bell-top: #0f2f63;
@@ -96,6 +95,53 @@
   --console-rightpanel-text: #f5f7ff;
   --console-bell-color: #f5f7ff;
   --console-header-title: #f5f7ff;
+}
+
+@media (prefers-color-scheme: light) {
+  :global(:root:not([data-theme])) .page {
+    --console-bg: #dfe3ec;
+    --console-bell-top: #0f2f63;
+    --console-bell-bottom: #0b2349;
+    --console-bell-border: rgba(255, 255, 255, 0.4);
+
+    --console-card-top: #ffffff;
+    --console-card-bottom: #f3f5fa;
+    --console-border-weak: rgba(13, 33, 70, 0.25);
+    --console-border-strong: rgba(13, 33, 70, 0.35);
+
+    --console-select-bg: #ffffff;
+    --console-select-text: #0d2550;
+    --console-select-border: rgba(13, 33, 70, 0.3);
+    --console-select-focus-border: rgba(13, 33, 70, 0.6);
+    --console-select-focus-shadow: 0 0 0 3px rgba(17, 52, 109, 0.22);
+    --console-select-chevron: #0d2550;
+
+    --console-kpi-title: rgba(13, 37, 80, 0.75);
+
+    --console-mapcard-top: #ffffff;
+    --console-mapcard-bottom: #ecf0f8;
+    --console-map-grid-strong: rgba(13, 33, 70, 0.12);
+    --console-map-grid-faint: rgba(13, 33, 70, 0.06);
+    --console-map-bg: #f7f9fe;
+
+    --console-demo-pin-shadow: 0 10px 16px rgba(13, 33, 70, 0.2);
+    --console-demo-badge-bg: rgba(13, 33, 70, 0.9);
+    --console-demo-badge-shadow: 0 6px 16px rgba(13, 33, 70, 0.26);
+
+    --console-rightpanel-top: #0f2f63;
+    --console-rightpanel-bottom: #0b2349;
+
+    --console-alert-bg: rgba(255, 255, 255, 0.08);
+    --console-alert-border: rgba(255, 255, 255, 0.35);
+    --console-alert-line: #f5f7ff;
+    --console-alert-sub: rgba(233, 238, 255, 0.9);
+    --console-header-bg: linear-gradient(180deg, #133b74 0%, #0b2d5f 100%);
+    --console-header-border: rgba(255, 255, 255, 0.35);
+    --console-header-shadow: 0 22px 35px rgba(13, 33, 70, 0.35);
+    --console-rightpanel-text: #f5f7ff;
+    --console-bell-color: #f5f7ff;
+    --console-header-title: #f5f7ff;
+  }
 }
 
 /* Header */
