@@ -1,10 +1,10 @@
 // =============================
-// 方案 A：Dynamic Library Import（推荐，少依赖）
-// 目录：app/google-maps/page.tsx（Next.js App Router）
-// 说明：
-// 1) 通过 <Script> 注入官方 bootloader（只需一次）。
-// 2) 在客户端组件中用 google.maps.importLibrary 按需加载。
-// 3) SSR 场景下必须在客户端执行（'use client'）。
+// Approach A: Dynamic Library Import (Recommended, fewer dependencies)
+// Location: app/google-maps/page.tsx (Next.js App Router)
+// Description:
+// 1) Use <Script> to inject the official bootloader (only needs to be done once).
+// 2) Use google.maps.importLibrary in a client component to load libraries on demand.
+// 3) Must be executed on the client-side for SSR scenarios ('use client').
 // =============================
 
 "use client";
@@ -19,8 +19,8 @@ export default function Page() {
     let map: google.maps.Map | null = null;
 
     async function initMap() {
-      // 确保 bootloader 已经把 google.maps 挂到全局
-      // 然后按需加载库
+      // Ensure the bootloader has attached google.maps to the window object,
+      // then load libraries on demand.
       const { Map } = (await (window as any).google.maps.importLibrary(
         "maps"
       )) as google.maps.MapsLibrary;
@@ -35,7 +35,7 @@ export default function Page() {
       map = new Map(mapRef.current, {
         center: { lat: -34.397, lng: 150.644 },
         zoom: 8,
-        mapId: "YOUR_MAP_ID", // 可选：自定义样式
+        mapId: "YOUR_MAP_ID", // Optional: for custom map styling
       });
 
             // The marker, positioned at Uluru
@@ -45,7 +45,7 @@ export default function Page() {
             title: 'Uluru'
         });
 
-      // 如需高级标记：
+      // For Advanced Markers:
       // await (window as any).google.maps.importLibrary("marker");
       // const marker = new (window as any).google.maps.marker.AdvancedMarkerElement({
       //   map,
@@ -56,15 +56,15 @@ export default function Page() {
     initMap();
 
     return () => {
-      // 可选：清理逻辑（如果你在组件卸载时需要释放资源）
+      // Optional: Cleanup logic (if you need to release resources on component unmount)
       map = null;
-      marker = null;
+      // marker = null; // 'marker' is not defined in this scope, so this line was commented out.
     };
   }, []);
 
   return (
     <div className="p-6 space-y-4">
-      {/* 1) 官方 bootloader（只加载一次即可） */}
+      {/* 1) Official bootloader (only needs to be loaded once) */}
       <Script id="gmaps-boot" strategy="afterInteractive">
         {`
           (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=\`https://maps.\${c}apis.com/maps/api/js?\`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
@@ -74,7 +74,7 @@ export default function Page() {
         `}
       </Script>
 
-      {/* 2) 地图容器 */}
+      {/* 2) The map container */}
       <div
         ref={mapRef}
         style={{ height: 480, width: "100%", borderRadius: 12 }}
@@ -85,8 +85,8 @@ export default function Page() {
 }
 
 // =============================
-// 方案 B：@googlemaps/js-api-loader（工程化/多处复用时好用）
-// 目录：components/GoogleMapClient.tsx，然后在任意页面引入使用
+// Approach B: @googlemaps/js-api-loader (Good for modular/reusable setups)
+// Location: components/GoogleMapClient.tsx, then import and use on any page.
 // =============================
 
 // components/GoogleMapClient.tsx
@@ -128,14 +128,14 @@ export default function Page() {
 //   return <div ref={ref} style={{ height: 480, width: "100%" }} />;
 // }
 
-// pages 使用：
+// Usage in a page:
 // app/google-maps-jsapi/page.tsx
 // "use client";
 // import GoogleMapClient from "@/components/GoogleMapClient";
 // export default function Page() {
 //   return (
 //     <div className="p-6">
-//       <GoogleMapClient />
+//       <GoogleMapClient /> // Assuming you have this component
 //     </div>
 //   );
 // }

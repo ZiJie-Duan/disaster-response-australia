@@ -42,10 +42,10 @@ const EMPTY_MANAGEMENT_DATA: ManagementData = {
 };
 
 export default function DisasterAreaManagementPage() {
-  // ====== 数据占位：等后端准备好后，把 EMPTY_MANAGEMENT_DATA 换成接口返回的数据 ======
-  // 例如：const [managementData, setManagementData] = useState(EMPTY_MANAGEMENT_DATA);
-  //      useEffect(() => { fetch('/api/management').then(res => res.json()).then(setManagementData); }, []);
-  const managementData = EMPTY_MANAGEMENT_DATA;
+  // ====== Data placeholder: Replace EMPTY_MANAGEMENT_DATA with data from the API once the backend is ready ======
+  // e.g.: const [managementData, setManagementData] = useState(EMPTY_MANAGEMENT_DATA);
+  //       useEffect(() => { fetch('/api/management').then(res => res.json()).then(setManagementData); }, []);
+  const managementData = EMPTY_MANAGEMENT_DATA; // Using placeholder data for frontend development.
 
   const [selectedAreaId, setSelectedAreaId] = useState<string>(
     () => managementData.areas[0]?.id ?? ""
@@ -55,33 +55,33 @@ export default function DisasterAreaManagementPage() {
   const areaDetails = managementData.areaDetails;
   const verifiedDevices = managementData.verifiedDevices;
 
-  // ====== 地图容器：留空，未来接地图 SDK ======
+  // ====== Map container: Leave empty, will integrate with Map SDK in the future ======
   const mapRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    // TODO[map]: 在这里初始化地图，例如：
+    // TODO[map]: Initialize the map here, e.g.:
     // const map = new mapboxgl.Map({ container: mapRef.current!, ... });
     // return () => map.remove();
   }, []);
 
-  // ====== Toolbar 动作：现在只是占位，未来接地图绘制逻辑 ======
+  // ====== Toolbar actions: Placeholders for now, will be connected to map drawing logic in the future ======
   const handleAddPoint = () => {
-    // TODO[map]: 激活“加点”模式（在地图上点击落点）
+    // TODO[map]: Activate "add point" mode (click on the map to place a point)
   };
   const handleAddLine = () => {
-    // TODO[map]: 激活“加线”模式（ polyline ）
+    // TODO[map]: Activate "add line" mode (polyline)
   };
   const handleAddArea = () => {
-    // TODO[map]: 激活“加多边形”模式（ polygon ）
+    // TODO[map]: Activate "add polygon" mode (polygon)
   };
   const handleDelete = () => {
-    // TODO[map]: 删除选中的图形/要素
+    // TODO[map]: Delete selected shape/feature
   };
 
-  // ====== 切换区域：未来从后端拉该区域详情/设备列表，再 setState ======
+  // ====== Switch area: In the future, fetch area details/device list from the backend and then setState ======
   const selectArea = (id: string) => {
     setSelectedAreaId(id);
-    // TODO[backend]: 将来在这里根据区域 id 调接口，更新区域详情与设备列表。
+    // TODO[backend]: In the future, call the API here based on the area id to update area details and device list.
   };
 
   return (
@@ -95,7 +95,7 @@ export default function DisasterAreaManagementPage() {
 
         <button className={styles.createBtn}
           onClick={() => {
-            // TODO[backend]: 打开新建弹窗，提交后调用后端创建区域
+            // TODO[backend]: Open a creation dialog, and call the backend to create an area upon submission
           }}
         >
           Create Disaster Area
@@ -103,7 +103,7 @@ export default function DisasterAreaManagementPage() {
 
         <nav className={styles.areaList}>
           {areas.length === 0 ? (
-            <div className={styles.emptyMessage}>暂无区域数据，请接入后端后填充。</div>
+            <div className={styles.emptyMessage}>No area data available. Please connect to the backend.</div>
           ) : (
             areas.map(area => (
               <button
@@ -150,8 +150,8 @@ export default function DisasterAreaManagementPage() {
         <div className={styles.mapCard}>
           <div ref={mapRef} id="map-container" className={styles.mapSurface} />
 
-          {/* 中间的“Verified Device”提示气泡（仅 UI 占位） */}
-          {/* TODO[map]: 未来改成地图上的 Marker/Popup，根据设备坐标定位 */}
+          {/* "Verified Device" bubble in the middle (UI placeholder only) */}
+          {/* TODO[map]: This will be replaced by a map Marker/Popup, positioned by device coordinates */}
           {verifiedDevices[0] && (
             <div className={styles.deviceBubble} role="dialog" aria-label="Verified Device">
               <div className={styles.deviceBubbleTitle}>Verified Device</div>
@@ -162,12 +162,12 @@ export default function DisasterAreaManagementPage() {
             </div>
           )}
 
-          {/* 右下角：白色圆角面板（设备列表 + 图例） */}
+          {/* Bottom-right: white rounded panel (device list + legend) */}
           <div className={styles.dockPanel}>
           <div className={styles.dockTitle}>Verified Devices</div>
           <ul className={styles.deviceList}>
             {verifiedDevices.length === 0 ? (
-              <li className={styles.emptyListItem}>暂无验证设备，接入后端后在此展示。</li>
+              <li className={styles.emptyListItem}>No verified devices. Will be displayed here after backend integration.</li>
             ) : (
               verifiedDevices.map(d => (
                 <li key={d.id} className={styles.deviceItem}>
@@ -185,7 +185,7 @@ export default function DisasterAreaManagementPage() {
           </div>
         </div>
 
-        {/* 底部“Area Details”信息条 */}
+        {/* Bottom "Area Details" information bar */}
         <div className={styles.detailBar}>
           <div className={styles.detailTitle}>AREA DETAILS</div>
           <div className={styles.detailGrid}>
@@ -200,7 +200,7 @@ export default function DisasterAreaManagementPage() {
   );
 }
 
-/* ============ 小组件 ============ */
+/* ============ Small Components ============ */
 
 function ToolbarButton({
   label,
@@ -237,7 +237,7 @@ function LegendSwatch({ color, label }: { color: string; label: string }) {
   );
 }
 
-/* ============ 简单内联图标（避免装依赖） ============ */
+/* ============ Simple inline icons (to avoid dependencies) ============ */
 
 function PinIcon() {
   return (
