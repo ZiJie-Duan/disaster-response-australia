@@ -188,10 +188,79 @@
 }
 
 .sideTitle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1px;
+  opacity: 0.95;
+}
+
+.sideTitleLabel {
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: 0.6px;
-  opacity: 0.95;
+}
+
+.logoLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.logoLink:hover {
+  background: var(--mgmt-area-hover-bg);
+  border-color: var(--mgmt-sidebar-border);
+  transform: translateY(-1px);
+}
+
+.logoWrapper {
+  position: relative;
+  width: 75px;
+  height: 70px;
+  display: inline-block;
+}
+
+.logoImage {
+  display: block;
+}
+
+.logoWrapper .logoImage {
+  position: absolute;
+  inset: 0;
+}
+
+.logoDark { display: none; }
+
+:global(:root[data-theme="dark"]) .logoDark,
+:global(:root:not([data-theme])) .logoDark {
+  display: block;
+}
+
+:global(:root[data-theme="dark"]) .logoLight,
+:global(:root:not([data-theme])) .logoLight {
+  display: none;
+}
+
+:global(:root[data-theme="light"]) .logoDark {
+  display: none;
+}
+
+:global(:root[data-theme="light"]) .logoLight {
+  display: block;
+}
+
+@media (prefers-color-scheme: light) {
+  :global(:root:not([data-theme])) .logoDark {
+    display: none;
+  }
+
+  :global(:root:not([data-theme])) .logoLight {
+    display: block;
+  }
 }
 
 .createBtn {

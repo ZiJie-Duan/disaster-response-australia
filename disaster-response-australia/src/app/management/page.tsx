@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import styles from './management.module.css';
 
@@ -89,8 +91,29 @@ export default function DisasterAreaManagementPage() {
       {/* 左侧侧边栏 */}
       <aside className={styles.sidebar}>
         <div className={styles.sideTitle}>
-          <span>DISASTER AREA</span>
-          <span>MANAGEMENT SYSTEM</span>
+          <Link href="/" className={styles.logoLink} aria-label="Back to homepage">
+            <span className={styles.logoWrapper}>
+              <Image
+                src="/lightlogo.png"
+                alt="Disaster Response Australia logo"
+                fill
+                sizes="80px"
+                className={`${styles.logoImage} ${styles.logoLight}`}
+                priority
+                style={{ objectFit: 'contain' }}
+              />
+              <Image
+                src="/darklogo.png"
+                alt="Disaster Response Australia logo"
+                fill
+                sizes="80px"
+                className={`${styles.logoImage} ${styles.logoDark}`}
+                priority
+                style={{ objectFit: 'contain' }}
+              />
+            </span>
+          </Link>
+          <span className={styles.sideTitleLabel}>MANAGEMENT SYSTEM</span>
         </div>
 
         <button className={styles.createBtn}
