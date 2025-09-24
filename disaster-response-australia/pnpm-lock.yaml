@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@googlemaps/js-api-loader':
+        specifier: ^1.16.10
+        version: 1.16.10
       lucide-react:
         specifier: ^0.544.0
         version: 0.544.0(react@19.1.0)
@@ -23,6 +26,12 @@ importers:
       react-dom:
         specifier: 19.1.0
         version: 19.1.0(react@19.1.0)
+      terra-draw:
+        specifier: ^1.15.0
+        version: 1.15.0
+      terra-draw-google-maps-adapter:
+        specifier: ^1.0.4
+        version: 1.0.4(@googlemaps/js-api-loader@1.16.10)(terra-draw@1.15.0)
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3
@@ -30,6 +39,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.13
+      '@types/google.maps':
+        specifier: ^3.58.1
+        version: 3.58.1
       '@types/node':
         specifier: ^20
         version: 20.19.14
@@ -104,6 +116,9 @@ packages:
   '@eslint/plugin-kit@0.3.5':
     resolution: {integrity: sha512-Z5kJ+wU3oA7MMIqVR9tyZRtjYPr4OC004Q4Rw7pgOKUOKkJfZ3O24nz3WYfGRpMDNmcOi3TwQOmgm7B7Tpii0w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@googlemaps/js-api-loader@1.16.10':
+    resolution: {integrity: sha512-c2erv2k7P2ilYzMmtYcMgAR21AULosQuUHJbStnrvRk2dG93k5cqptDrh9A8p+ZNlyhiqEOgHW7N9PAizdUM7Q==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -438,6 +453,9 @@ packages:
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
+
+  '@types/google.maps@3.58.1':
+    resolution: {integrity: sha512-X9QTSvGJ0nCfMzYOnaVs/k6/4L+7F5uCS+4iUmkLEls6J9S/Phv+m/i3mDeyc49ZBgwab3EFO1HEoBY7k98EGQ==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -1718,6 +1736,15 @@ packages:
     resolution: {integrity: sha512-5S7Va8hKfV7W5U6g3aYxXmlPoZVAwUMy9AOKyF2fVuZa2UD3qZjg578OrLRt8PcNN1PleVaL/5/yYATNL0ICUw==}
     engines: {node: '>=18'}
 
+  terra-draw-google-maps-adapter@1.0.4:
+    resolution: {integrity: sha512-pVV5QfqxEo9pfYTY98Q4TonpATil2fZywIFDlh2XsqjtkO+9yeHIM1R+mp7lj3vRGkrSaZzWCQH2DHcLdn4W/A==}
+    peerDependencies:
+      '@googlemaps/js-api-loader': ^1.14.3
+      terra-draw: ^1.0.0
+
+  terra-draw@1.15.0:
+    resolution: {integrity: sha512-a+Tb+Fo1Qq5Ps3HmCem+06Qt0cEdyZVOa6/7Teo5DkvRikxVzdTKxzASNmsG9V9ckJlJI+Nce5sdP/7L9Lb0ig==}
+
   tinyglobby@0.2.15:
     resolution: {integrity: sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==}
     engines: {node: '>=12.0.0'}
@@ -1872,6 +1899,8 @@ snapshots:
     dependencies:
       '@eslint/core': 0.15.2
       levn: 0.4.1
+
+  '@googlemaps/js-api-loader@1.16.10': {}
 
   '@humanfs/core@0.19.1': {}
 
@@ -2130,6 +2159,8 @@ snapshots:
     optional: true
 
   '@types/estree@1.0.8': {}
+
+  '@types/google.maps@3.58.1': {}
 
   '@types/json-schema@7.0.15': {}
 
@@ -3638,6 +3669,13 @@ snapshots:
       minizlib: 3.0.2
       mkdirp: 3.0.1
       yallist: 5.0.0
+
+  terra-draw-google-maps-adapter@1.0.4(@googlemaps/js-api-loader@1.16.10)(terra-draw@1.15.0):
+    dependencies:
+      '@googlemaps/js-api-loader': 1.16.10
+      terra-draw: 1.15.0
+
+  terra-draw@1.15.0: {}
 
   tinyglobby@0.2.15:
     dependencies:
