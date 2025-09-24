@@ -1,12 +1,3 @@
-/**
- * 灾害响应地图组件
- * 
- * 集成 TerraDraw 和 Google Maps，提供强大的地图绘制功能：
- * - 使用 TerraDraw 处理用户交互和绘制逻辑
- * - 使用 Google Maps 原生对象进行图形渲染
- * - 支持点、线、多边形、矩形、圆形的绘制和编辑
- * - 提供 GeoJSON 数据导出功能
- */
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -19,241 +10,188 @@ import {
   TerraDrawPolygonMode,
   TerraDrawRectangleMode,
   TerraDrawCircleMode,
+  TerraDrawFreehandMode
 } from 'terra-draw';
 import { TerraDrawGoogleMapsAdapter } from 'terra-draw-google-maps-adapter';
 
-/**
- * 图形管理器类
- * 负责将 TerraDraw 的 GeoJSON 特征转换为 Google Maps 原生对象
- * 实现 TerraDraw 交互与 Google Maps 原生样式的完美结合
- */
-class ShapeManager {
-  private map: google.maps.Map;
-  private shapes: Map<string, google.maps.MVCObject> = new Map();
-  
-  constructor(map: google.maps.Map) {
-    this.map = map;
-  }
 
-  // 将 GeoJSON Feature 转换为 Google Maps 原生对象
-  private createGoogleMapsShape(feature: any): google.maps.MVCObject | null {
-    const { geometry, properties, id } = feature;
-    
-    // 过滤掉 TerraDraw 的临时/辅助特征
-    // 只渲染有明确 mode 属性的正式特征
-    if (!properties?.mode) {
-      return null;
-    }
-    
-    // 检查是否是特殊模式（矩形、圆形）
-    if (properties?.mode === 'rectangle' && geometry.type === 'Polygon') {
-      const coords = geometry.coordinates[0];
-      const bounds = new google.maps.LatLngBounds();
-      coords.forEach((coord: number[]) => {
-        bounds.extend({ lat: coord[1], lng: coord[0] });
-      });
-      return new google.maps.Rectangle({
-        bounds,
-        map: this.map,
-        fillColor: '#34A853',
-        fillOpacity: 0.2,
-        strokeColor: '#34A853',
-        strokeWeight: 2,
-        strokeOpacity: 0.8,
-      });
-    }
-    
-    if (properties?.mode === 'circle' && geometry.type === 'Polygon') {
-      // 对于圆形，TerraDraw 可能在属性中存储中心点和半径
-      if (properties.center && properties.radius) {
-        const center = { lat: properties.center[1], lng: properties.center[0] };
-        return new google.maps.Circle({
-          center,
-          radius: properties.radius,
-          map: this.map,
-          fillColor: '#EA4335',
-          fillOpacity: 0.2,
-          strokeColor: '#EA4335',
-          strokeWeight: 2,
-          strokeOpacity: 0.8,
-        });
-      } else {
-        // 如果没有中心点和半径信息，计算多边形的中心点作为圆心
-        const coords = geometry.coordinates[0];
-        let latSum = 0, lngSum = 0;
-        coords.forEach((coord: number[]) => {
-          latSum += coord[1];
-          lngSum += coord[0];
-        });
-        const center = { lat: latSum / coords.length, lng: lngSum / coords.length };
-        // 估算半径（简化处理）
-        const radius = this.calculateDistance(center, { lat: coords[0][1], lng: coords[0][0] });
-        
-        return new google.maps.Circle({
-          center,
-          radius,
-          map: this.map,
-          fillColor: '#EA4335',
-          fillOpacity: 0.2,
-          strokeColor: '#EA4335',
-          strokeWeight: 2,
-          strokeOpacity: 0.8,
-        });
-      }
-    }
-    
-    // 标准几何类型处理
-    switch (geometry.type) {
-      case 'Point':
-        // 只渲染来自点模式的点特征
-        if (properties?.mode !== 'point') {
-          return null;
+const colorPalette = [
+  "#E74C3C",
+  "#FF0066",
+  "#9B59B6",
+  "#673AB7",
+  "#3F51B5",
+  "#3498DB",
+  "#03A9F4",
+  "#00BCD4",
+  "#009688",
+  "#27AE60",
+  "#8BC34A",
+  "#CDDC39",
+  "#F1C40F",
+  "#FFC107",
+  "#F39C12",
+  "#FF5722",
+  "#795548"
+];
+
+const getRandomColor = () => colorPalette[Math.floor(Math.random() * colorPalette.length)] as `#${string}`;
+
+function processSnapshotForUndo(snapshot: any[]): any[] {
+    // console.log("Processing snapshot for undo:", snapshot);
+    return snapshot.map(feature => {
+        const newFeature = JSON.parse(JSON.stringify(feature));
+
+        if (newFeature.properties.mode === 'rectangle') {
+            // console.log("Processing rectangle for undo:", newFeature);
+            newFeature.geometry.type = 'Polygon';
+            newFeature.properties.mode = 'polygon';
+        } else if (newFeature.properties.mode === 'circle') {
+            // console.log("Processing circle for undo:", newFeature);
+            newFeature.geometry.type = 'Polygon';
+            // The radius is already in properties, so we just need to ensure the mode is correct for re-creation
+            newFeature.properties.mode = 'circle';
         }
-        
-        return new google.maps.Marker({
-          position: {
-            lat: geometry.coordinates[1],
-            lng: geometry.coordinates[0]
-          },
-          map: this.map,
-          title: properties?.title || `点 ${id}`,
-          // 使用 Google Maps 默认样式
-        });
-
-      case 'LineString':
-        // 只渲染来自线条模式的线条特征
-        if (properties?.mode !== 'linestring') {
-          return null;
-        }
-        
-        return new google.maps.Polyline({
-          path: geometry.coordinates.map((coord: number[]) => ({
-            lat: coord[1],
-            lng: coord[0]
-          })),
-          map: this.map,
-          // Google Maps 默认线条样式
-          strokeColor: '#4285F4',
-          strokeWeight: 3,
-          strokeOpacity: 0.8,
-        });
-
-      case 'Polygon':
-        // 只渲染来自多边形模式的多边形特征（排除矩形和圆形）
-        if (properties?.mode !== 'polygon') {
-          return null;
-        }
-        
-        const paths = geometry.coordinates.map((ring: number[][]) =>
-          ring.map((coord: number[]) => ({
-            lat: coord[1],
-            lng: coord[0]
-          }))
-        );
-        return new google.maps.Polygon({
-          paths,
-          map: this.map,
-          // Google Maps 默认多边形样式
-          fillColor: '#4285F4',
-          fillOpacity: 0.2,
-          strokeColor: '#4285F4',
-          strokeWeight: 2,
-          strokeOpacity: 0.8,
-        });
-
-      default:
-        return null;
-    }
-  }
-
-  // 计算两点之间的距离（米）
-  private calculateDistance(point1: {lat: number, lng: number}, point2: {lat: number, lng: number}): number {
-    const R = 6371e3; // 地球半径（米）
-    const φ1 = point1.lat * Math.PI/180;
-    const φ2 = point2.lat * Math.PI/180;
-    const Δφ = (point2.lat-point1.lat) * Math.PI/180;
-    const Δλ = (point2.lng-point1.lng) * Math.PI/180;
-
-    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-            Math.cos(φ1) * Math.cos(φ2) *
-            Math.sin(Δλ/2) * Math.sin(Δλ/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-    return R * c;
-  }
-
-  // 更新所有图形
-  updateShapes(features: any[]) {
-    // 清除不存在的图形
-    const currentIds = new Set(features.map(f => f.id));
-    for (const [id, shape] of this.shapes) {
-      if (!currentIds.has(id)) {
-        this.removeShape(id);
-      }
-    }
-
-    // 添加或更新图形
-    features.forEach(feature => {
-      if (this.shapes.has(feature.id)) {
-        // 更新现有图形（删除后重新创建）
-        this.removeShape(feature.id);
-      }
-      
-      const shape = this.createGoogleMapsShape(feature);
-      if (shape) {
-        this.shapes.set(feature.id, shape);
-      }
+        return newFeature;
     });
-  }
-
-  // 移除指定图形
-  private removeShape(id: string) {
-    const shape = this.shapes.get(id);
-    if (shape) {
-      if ('setMap' in shape) {
-        (shape as any).setMap(null);
-      }
-      this.shapes.delete(id);
-    }
-  }
-
-  // 清除所有图形
-  clearAll() {
-    for (const [id] of this.shapes) {
-      this.removeShape(id);
-    }
-  }
-
-  // 销毁管理器
-  destroy() {
-    this.clearAll();
-  }
 }
 
-type ModeId =
-  | 'select'
-  | 'point'
-  | 'linestring'
-  | 'polygon'
-  | 'rectangle'
-  | 'circle'
-  | 'static';
+type ModeId = 'select' | 'point' | 'linestring' | 'polygon' | 'rectangle' | 'circle' | 'freehand' | 'static';
 
-export default function TerraDrawMapPage() {
+export default function TerraDrawAdvancedPage() {
   const mapDivRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const drawRef = useRef<TerraDraw | null>(null);
-  const shapeManagerRef = useRef<ShapeManager | null>(null);
-  const [activeMode, setActiveMode] = useState<ModeId>('static');
+  const historyRef = useRef<any[]>([]);
+  const redoHistoryRef = useRef<any[]>([]);
+  const selectedFeatureIdRef = useRef<string | null>(null);
+  const isRestoringRef = useRef<boolean>(false);
+  const debounceTimeoutRef = useRef<number | undefined>(undefined);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  
+  const [activeMode, setActiveMode] = useState<ModeId>('point');
+  const [resizingEnabled, setResizingEnabled] = useState<boolean>(false);
+
+  // 模式切换函数
+  const switchMode = (mode: ModeId) => {
+    if (!drawRef.current) return;
+    
+    if (mode === 'static') {
+      drawRef.current.clear();
+      drawRef.current.setMode('static');
+    } else {
+      drawRef.current.setMode(mode);
+    }
+    setActiveMode(mode);
+  };
+
+  // 导出 GeoJSON
+  const exportGeoJSON = () => {
+    if (!drawRef.current) return;
+    
+    const features = drawRef.current.getSnapshot();
+    const geojson = {
+      type: "FeatureCollection",
+      features: features,
+    };
+    const data = JSON.stringify(geojson, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "drawing.geojson";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // 导入 GeoJSON
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !drawRef.current) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const geojson = JSON.parse(e.target?.result as string);
+        if (geojson.type === "FeatureCollection") {
+          drawRef.current!.addFeatures(geojson.features);
+        } else {
+          alert("Invalid GeoJSON file: must be a FeatureCollection.");
+        }
+      } catch (error) {
+        alert("Error parsing GeoJSON file.");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // 删除选中的特征
+  const deleteSelected = () => {
+    if (!drawRef.current) return;
+    
+    if (selectedFeatureIdRef.current) {
+      drawRef.current.removeFeatures([selectedFeatureIdRef.current]);
+    } else {
+      const features = drawRef.current.getSnapshot();
+      if (features.length > 0) {
+        const lastFeature = features[features.length - 1];
+        if (lastFeature.id) {
+          drawRef.current.removeFeatures([lastFeature.id]);
+        }
+      }
+    }
+  };
+
+  // 撤销
+  const undo = () => {
+    if (!drawRef.current || historyRef.current.length <= 1) return;
+    
+    redoHistoryRef.current.push(historyRef.current.pop()!);
+    const snapshotToRestore = historyRef.current[historyRef.current.length - 1];
+    isRestoringRef.current = true;
+    drawRef.current.clear();
+    drawRef.current.addFeatures(snapshotToRestore);
+    setTimeout(() => { isRestoringRef.current = false; }, 0);
+  };
+
+  // 重做
+  const redo = () => {
+    if (!drawRef.current || redoHistoryRef.current.length === 0) return;
+    
+    const snapshot = redoHistoryRef.current.pop()!;
+    historyRef.current.push(snapshot);
+    isRestoringRef.current = true;
+    drawRef.current.clear();
+    drawRef.current.addFeatures(snapshot);
+    setTimeout(() => { isRestoringRef.current = false; }, 0);
+  };
+
+  // 切换调整大小模式
+  const toggleResize = () => {
+    if (!drawRef.current) return;
+    
+    const newResizingEnabled = !resizingEnabled;
+    setResizingEnabled(newResizingEnabled);
+    
+    const flags = {
+      polygon: { feature: { draggable: true, coordinates: { resizable: newResizingEnabled ? 'center' : undefined, draggable: !newResizingEnabled } } },
+      linestring: { feature: { draggable: true, coordinates: { resizable: newResizingEnabled ? 'center' : undefined, draggable: !newResizingEnabled } } },
+      rectangle: { feature: { draggable: true, coordinates: { resizable: newResizingEnabled ? 'center' : undefined, draggable: !newResizingEnabled } } },
+      circle: { feature: { draggable: true, coordinates: { resizable: newResizingEnabled ? 'center' : undefined, draggable: !newResizingEnabled } } },
+      freehand: { feature: { draggable: true, coordinates: { resizable: newResizingEnabled ? 'center' : undefined, draggable: !newResizingEnabled } } },
+    };
+    
+    drawRef.current.updateModeOptions('select', { flags });
+  };
 
   useEffect(() => {
     let cancelled = false;
     let projectionListener: google.maps.MapsEventListener | null = null;
 
-    async function init() {
+    const init = async () => {
       if (typeof window === 'undefined') return;
       if (!mapDivRef.current) return;
-      if (mapRef.current || drawRef.current) return; // 防止重复初始化
+      if (mapRef.current || drawRef.current) return;
 
       const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
       if (!apiKey) {
@@ -261,150 +199,234 @@ export default function TerraDrawMapPage() {
         return;
       }
 
-      // 加载 Google Maps API
-      const loader = new Loader({
-        apiKey,
-        version: 'weekly',
-        libraries: ['maps'],
-      });
-      await loader.load();
-
-      // 获取 Map 构造函数
-      const { Map } = (await google.maps.importLibrary('maps')) as google.maps.MapsLibrary;
-
-      if (cancelled || !mapDivRef.current) return;
-
-      // 创建 Google Map 实例
-      const map = new Map(mapDivRef.current, {
-        center: { lat: -37.8136, lng: 144.9631 }, // 墨尔本
-        zoom: 12,
-        mapId: undefined,
-        mapTypeId: 'roadmap',
-        clickableIcons: false,
-        streetViewControl: false,
-        fullscreenControl: false,
-      });
-      mapRef.current = map;
-
-      // 等待地图投影就绪后初始化 TerraDraw
-      projectionListener = map.addListener('projection_changed', () => {
-        if (drawRef.current || cancelled) return;
-
-        const adapter = new TerraDrawGoogleMapsAdapter({
-          map,
-          lib: google.maps,
-          coordinatePrecision: 9,
+      try {
+        const loader = new Loader({
+          apiKey,
+          version: "weekly",
+          libraries: ["maps", "drawing", "marker"]
         });
 
-        // 创建图形管理器
-        const shapeManager = new ShapeManager(map);
-        shapeManagerRef.current = shapeManager;
+        await loader.load();
+        
+        const { Map } = await google.maps.importLibrary("maps") as google.maps.MapsLibrary;
 
-        const draw = new TerraDraw({
-          adapter,
-          modes: [
-            // 选择模式 - 用于编辑已绘制的图形
-            new TerraDrawSelectMode({
-              styles: {
-                selectedPointColor: '#ffffff',
-                selectedPointWidth: 0.01,
-                selectedPointOutlineColor: '#ffffff',
-                selectedPointOutlineWidth: 0,
-                midPointColor: '#ffffff',
-                midPointWidth: 0.01,
-                midPointOutlineColor: '#ffffff',
-                midPointOutlineWidth: 0,
-                selectedLineStringColor: '#ffffff',
-                selectedLineStringWidth: 0.01,
-                selectedPolygonColor: '#ffffff',
-                selectedPolygonFillOpacity: 0.001,
-                selectedPolygonOutlineColor: '#ffffff',
-                selectedPolygonOutlineWidth: 0.01
+        if (cancelled || !mapDivRef.current) return;
+
+        const mapOptions: google.maps.MapOptions = {
+          center: { lat: 48.862, lng: 2.342 },
+          zoom: 12,
+          mapId: 'c306b3c6dd3ed8d9',
+          mapTypeId: 'roadmap',
+          zoomControl: false,
+          tilt: 45,
+          mapTypeControl: true,
+          clickableIcons: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+        };
+
+        const map = new Map(mapDivRef.current, mapOptions);
+        mapRef.current = map;
+
+        map.addListener("click", () => {
+          if (drawRef.current) {
+            console.log("Current draw mode on map click:", drawRef.current.getMode());
+          }
+        });
+
+        projectionListener = map.addListener("projection_changed", () => {
+          if (drawRef.current || cancelled) return;
+
+          const draw = new TerraDraw({
+            adapter: new TerraDrawGoogleMapsAdapter({ map, lib: google.maps, coordinatePrecision: 9 }),
+            modes: [
+              new TerraDrawSelectMode({
+                flags: {
+                  polygon: {
+                    feature: {
+                      draggable: true,
+                      rotateable: true,
+                      coordinates: {
+                        midpoints: true,
+                        draggable: true,
+                        deletable: true,
+                      },
+                    },
+                  },
+                  linestring: {
+                    feature: {
+                      draggable: true,
+                      rotateable: true,
+                      coordinates: {
+                        midpoints: true,
+                        draggable: true,
+                        deletable: true,
+                      },
+                    },
+                  },
+                  point: {
+                    feature: {
+                      draggable: true,
+                      rotateable: true,
+                    },
+                  },
+                  rectangle: {
+                    feature: {
+                      draggable: true,
+                      rotateable: true,
+                      coordinates: {
+                        midpoints: true,
+                        draggable: true,
+                        deletable: true,
+                      },
+                    },
+                  },
+                  circle: {
+                    feature: {
+                      draggable: true,
+                      rotateable: true,
+                      coordinates: {
+                        midpoints: true,
+                        draggable: true,
+                        deletable: true,
+                      },
+                    },
+                  },
+                  freehand: {
+                    feature: {
+                      draggable: true,
+                      rotateable: true,
+                      coordinates: {
+                        midpoints: true,
+                        draggable: true,
+                        deletable: true,
+                      },
+                    },
+                  },
+                },
+              }),
+              new TerraDrawPointMode({
+                editable: true,
+                styles: { pointColor: getRandomColor() },
+              }),
+              new TerraDrawLineStringMode({
+                editable: true,
+                styles: { lineStringColor: getRandomColor() },
+              }),
+              new TerraDrawPolygonMode({
+                editable: true,
+                styles: (() => {
+                  const color = getRandomColor();
+                  return {
+                    fillColor: color,
+                    outlineColor: color,
+                  };
+                })(),
+              }),
+              new TerraDrawRectangleMode({
+                styles: (() => {
+                  const color = getRandomColor();
+                  return {
+                    fillColor: color,
+                    outlineColor: color,
+                  };
+                })(),
+              }),
+              new TerraDrawCircleMode({
+                styles: (() => {
+                  const color = getRandomColor();
+                  return {
+                    fillColor: color,
+                    outlineColor: color,
+                  };
+                })(),
+              }),
+              new TerraDrawFreehandMode({
+                styles: (() => {
+                  const color = getRandomColor();
+                  return {
+                    fillColor: color,
+                    outlineColor: color,
+                  };
+                })(),
+              }),
+            ],
+          });
+
+          drawRef.current = draw;
+          draw.start();
+
+
+          draw.on('ready', () => {
+            console.log("TerraDraw is ready!");
+            draw.setMode('point');
+            setActiveMode('point');
+
+            draw.on("select", (id) => {
+              if (selectedFeatureIdRef.current && selectedFeatureIdRef.current !== id) {
+                draw.deselectFeature(selectedFeatureIdRef.current);
               }
-            }),
-            // 点绘制模式
-            new TerraDrawPointMode({
-              editable: true,
-              styles: { 
-                pointColor: '#ffffff',
-                pointWidth: 0.01,
-                pointOutlineColor: '#ffffff',
-                pointOutlineWidth: 0
-              },
-            }),
-            // 线条绘制模式
-            new TerraDrawLineStringMode({
-              editable: true,
-              styles: { 
-                lineStringColor: '#ffffff', 
-                lineStringWidth: 0.01,
-                closingPointColor: '#ffffff',
-                closingPointWidth: 0.01,
-                closingPointOutlineColor: '#ffffff',
-                closingPointOutlineWidth: 0
-              },
-            }),
-            // 多边形绘制模式
-            new TerraDrawPolygonMode({
-              editable: true,
-              styles: { 
-                fillColor: '#ffffff', 
-                outlineColor: '#ffffff', 
-                fillOpacity: 0.001,
-                outlineWidth: 0.01,
-                closingPointColor: '#ffffff',
-                closingPointWidth: 0.01,
-                closingPointOutlineColor: '#ffffff',
-                closingPointOutlineWidth: 0
-              },
-            }),
-            // 矩形绘制模式
-            new TerraDrawRectangleMode({
-              styles: { 
-                fillColor: '#ffffff', 
-                outlineColor: '#ffffff', 
-                fillOpacity: 0.001,
-                outlineWidth: 0.01
-              },
-            }),
-            // 圆形绘制模式
-            new TerraDrawCircleMode({
-              styles: { 
-                fillColor: '#ffffff', 
-                outlineColor: '#ffffff', 
-                fillOpacity: 0.001,
-                outlineWidth: 0.01
-              },
-            }),
-          ],
+              selectedFeatureIdRef.current = id as string;
+            });
+
+            draw.on("deselect", () => {
+              selectedFeatureIdRef.current = null;
+            });
+
+            // 初始化历史记录
+            historyRef.current.push(processSnapshotForUndo(draw.getSnapshot()));
+
+            draw.on("change", (ids, type) => {
+              if (isRestoringRef.current) {
+                return;
+              }
+
+              if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current);
+              }
+
+              debounceTimeoutRef.current = window.setTimeout(() => {
+                const snapshot = draw.getSnapshot();
+                const processedSnapshot = processSnapshotForUndo(snapshot);
+                const filteredSnapshot = processedSnapshot.filter(
+                  (f) => !f.properties.midPoint && !f.properties.selectionPoint
+                );
+                historyRef.current.push(filteredSnapshot);
+                redoHistoryRef.current = [];
+              }, 200);
+            });
+
+            // 键盘事件监听
+            const handleKeyDown = (event: KeyboardEvent) => {
+              if (event.key === 'r' && selectedFeatureIdRef.current) {
+                const features = draw.getSnapshot();
+                const selectedFeature = features.find(f => f.id === selectedFeatureIdRef.current);
+
+                if (selectedFeature) {
+                  const newFeature = rotateFeature(selectedFeature, 15);
+                  draw.addFeatures([newFeature]);
+                }
+              }
+            };
+
+            document.addEventListener('keydown', handleKeyDown);
+            
+            // 返回清理函数
+            return () => {
+              document.removeEventListener('keydown', handleKeyDown);
+            };
+          });
         });
 
-        drawRef.current = draw;
-
-        // 启动 TerraDraw 并设置初始模式
-        draw.start();
-        draw.setMode('static');
-        setActiveMode('static');
-
-        // 监听 TerraDraw 变化事件，同步到 Google Maps
-        draw.on('change', () => {
-          const features = draw.getSnapshot();
-          shapeManager.updateShapes(features);
-        });
-      });
-    }
+      } catch (e) {
+        console.error("Error loading Google Maps API:", e);
+      }
+    };
 
     init();
 
-    // 清理函数
     return () => {
       cancelled = true;
-
-      // 清理图形管理器
-      if (shapeManagerRef.current) {
-        shapeManagerRef.current.destroy();
-        shapeManagerRef.current = null;
-      }
 
       // 清理 TerraDraw
       if (drawRef.current) {
@@ -420,39 +442,47 @@ export default function TerraDrawMapPage() {
         projectionListener = null;
       }
 
+      // 清理定时器
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+
       mapRef.current = null;
     };
   }, []);
 
-  /** 切换绘制模式 */
-  const switchMode = (mode: ModeId) => {
-    if (!drawRef.current) return;
-    if (mode === 'static') {
-      drawRef.current.setMode('static');
-    } else {
-      drawRef.current.setMode(mode);
-    }
-    setActiveMode(mode);
+  // 旋转特征的辅助函数
+  const rotateFeature = (feature: any, angle: number) => {
+    const newFeature = JSON.parse(JSON.stringify(feature));
+    const coordinates = newFeature.geometry.coordinates;
+    const center = getCenter(coordinates);
+
+    const rotatedCoordinates = coordinates.map((ring: any) => {
+      return ring.map((point: any) => {
+        const x = point[0] - center[0];
+        const y = point[1] - center[1];
+        const newX = x * Math.cos(angle * Math.PI / 180) - y * Math.sin(angle * Math.PI / 180);
+        const newY = x * Math.sin(angle * Math.PI / 180) + y * Math.cos(angle * Math.PI / 180);
+        return [newX + center[0], newY + center[1]];
+      });
+    });
+
+    newFeature.geometry.coordinates = rotatedCoordinates;
+    return newFeature;
   };
 
-  /** 清空所有图形 */
-  const clearAll = () => {
-    drawRef.current?.clear();
-    shapeManagerRef.current?.clearAll();
-    switchMode('static');
-  };
-
-  /** 导出 GeoJSON 文件 */
-  const exportGeoJSON = () => {
-    const features = drawRef.current?.getSnapshot() ?? [];
-    const fc = { type: 'FeatureCollection' as const, features };
-    const blob = new Blob([JSON.stringify(fc, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'drawing.geojson';
-    a.click();
-    URL.revokeObjectURL(url);
+  const getCenter = (coordinates: any) => {
+    let x = 0;
+    let y = 0;
+    let count = 0;
+    coordinates.forEach((ring: any) => {
+      ring.forEach((point: any) => {
+        x += point[0];
+        y += point[1];
+        count++;
+      });
+    });
+    return [x / count, y / count];
   };
 
   return (
@@ -462,48 +492,145 @@ export default function TerraDrawMapPage() {
         style={{
           display: 'flex',
           gap: 8,
-          padding: 8,
+          padding: 12,
           borderBottom: '1px solid #eee',
           alignItems: 'center',
           flexWrap: 'wrap',
+          backgroundColor: '#f8f9fa',
         }}
       >
+        {/* 绘制模式按钮 */}
         {([
-          { id: 'select', label: '选择' },
-          { id: 'point', label: '点' },
-          { id: 'linestring', label: '线' },
-          { id: 'polygon', label: '多边形' },
-          { id: 'rectangle', label: '矩形' },
-          { id: 'circle', label: '圆' },
-          { id: 'static', label: '停止绘制' },
-        ] as { id: ModeId; label: string }[]).map((b) => (
+          { id: 'select', label: '选择', icon: '🎯' },
+          { id: 'point', label: '点', icon: '📍' },
+          { id: 'linestring', label: '线', icon: '📏' },
+          { id: 'polygon', label: '多边形', icon: '🔷' },
+          { id: 'rectangle', label: '矩形', icon: '⬜' },
+          { id: 'circle', label: '圆形', icon: '⭕' },
+          { id: 'freehand', label: '自由绘制', icon: '✏️' },
+          { id: 'static', label: '清空', icon: '🗑️' },
+        ] as { id: ModeId; label: string; icon: string }[]).map((mode) => (
           <button
-            key={b.id}
-            onClick={() => switchMode(b.id)}
+            key={mode.id}
+            onClick={() => switchMode(mode.id)}
             style={{
-              padding: '6px 10px',
-              borderRadius: 8,
+              padding: '8px 12px',
+              borderRadius: 6,
               border: '1px solid #ddd',
-              background: activeMode === b.id ? '#000' : '#fff',
-              color: activeMode === b.id ? '#fff' : '#333',
+              background: activeMode === mode.id ? '#007bff' : '#fff',
+              color: activeMode === mode.id ? '#fff' : '#333',
               cursor: 'pointer',
+              fontSize: 14,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              transition: 'all 0.2s',
             }}
           >
-            {b.label}
+            <span>{mode.icon}</span>
+            {mode.label}
           </button>
         ))}
+
+        <div style={{ width: 1, height: 30, backgroundColor: '#ddd', margin: '0 8px' }} />
+
+        {/* 调整大小按钮 */}
+        <button
+          onClick={toggleResize}
+          style={{
+            padding: '8px 12px',
+            borderRadius: 6,
+            border: '1px solid #ddd',
+            background: resizingEnabled ? '#28a745' : '#fff',
+            color: resizingEnabled ? '#fff' : '#333',
+            cursor: 'pointer',
+            fontSize: 14,
+          }}
+        >
+          🔄 调整大小
+        </button>
+
+        <div style={{ width: 1, height: 30, backgroundColor: '#ddd', margin: '0 8px' }} />
+
+        {/* 撤销重做按钮 */}
+        <button
+          onClick={undo}
+          style={{
+            padding: '8px 12px',
+            borderRadius: 6,
+            border: '1px solid #ddd',
+            background: '#fff',
+            color: '#333',
+            cursor: 'pointer',
+            fontSize: 14,
+          }}
+        >
+          ↶ 撤销
+        </button>
+        <button
+          onClick={redo}
+          style={{
+            padding: '8px 12px',
+            borderRadius: 6,
+            border: '1px solid #ddd',
+            background: '#fff',
+            color: '#333',
+            cursor: 'pointer',
+            fontSize: 14,
+          }}
+        >
+          ↷ 重做
+        </button>
+
+        <div style={{ width: 1, height: 30, backgroundColor: '#ddd', margin: '0 8px' }} />
+
+        {/* 删除按钮 */}
+        <button
+          onClick={deleteSelected}
+          style={{
+            padding: '8px 12px',
+            borderRadius: 6,
+            border: '1px solid #dc3545',
+            background: '#fff',
+            color: '#dc3545',
+            cursor: 'pointer',
+            fontSize: 14,
+          }}
+        >
+          🗑️ 删除
+        </button>
+
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+          {/* 上传按钮 */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            style={{
+              padding: '8px 12px',
+              borderRadius: 6,
+              border: '1px solid #6c757d',
+              background: '#fff',
+              color: '#6c757d',
+              cursor: 'pointer',
+              fontSize: 14,
+            }}
+          >
+            📁 导入
+          </button>
+          
+          {/* 导出按钮 */}
           <button
             onClick={exportGeoJSON}
-            style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #ddd' }}
+            style={{
+              padding: '8px 12px',
+              borderRadius: 6,
+              border: '1px solid #17a2b8',
+              background: '#17a2b8',
+              color: '#fff',
+              cursor: 'pointer',
+              fontSize: 14,
+            }}
           >
-            导出 GeoJSON
-          </button>
-          <button
-            onClick={clearAll}
-            style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #ddd' }}
-          >
-            清空
+            💾 导出
           </button>
         </div>
       </div>
@@ -518,6 +645,34 @@ export default function TerraDrawMapPage() {
         }} 
       />
       
+      {/* 隐藏的文件输入 */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".geojson,.json"
+        onChange={handleFileUpload}
+        style={{ display: 'none' }}
+      />
+
+      {/* 帮助提示 */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 20,
+          right: 20,
+          background: 'rgba(0,0,0,0.8)',
+          color: 'white',
+          padding: 12,
+          borderRadius: 6,
+          fontSize: 12,
+          maxWidth: 300,
+        }}
+      >
+        <div><strong>快捷键：</strong></div>
+        <div>• 按 R 键旋转选中的图形</div>
+        <div>• 点击图形进行选择和编辑</div>
+        <div>• 拖拽图形进行移动</div>
+      </div>
     </div>
   );
 }
