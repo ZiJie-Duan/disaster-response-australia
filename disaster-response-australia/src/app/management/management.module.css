@@ -1,0 +1,482 @@
+.page {
+  /* Theme tokens default to the original dark palette. Light overrides below. */
+  --mgmt-bg: #0b0c10;
+  --mgmt-text: #f5f6fa;
+  --mgmt-muted: #c4cbe2;
+  --mgmt-accent: #2b5aa7;
+  --mgmt-primary-btn: #0a64a4;
+  --mgmt-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  --mgmt-radius-lg: 18px;
+  --mgmt-radius-xl: 22px;
+  --mgmt-topbar-bg: transparent;
+  --mgmt-topbar-border: transparent;
+  --mgmt-topbar-shadow: none;
+
+  --mgmt-sidebar-top: #0e1d39;
+  --mgmt-sidebar-bottom: #0b162b;
+  --mgmt-sidebar-border: rgba(255, 255, 255, 0.06);
+  --mgmt-sidebar-empty-bg: rgba(255, 255, 255, 0.04);
+
+  --mgmt-area-hover-bg: rgba(255, 255, 255, 0.04);
+  --mgmt-area-active-bg: #15294a;
+  --mgmt-area-active-border: rgba(255, 255, 255, 0.08);
+
+  --mgmt-toolbar-bg: #0b223d;
+  --mgmt-toolbar-border: rgba(255, 255, 255, 0.12);
+  --mgmt-toolbar-color: #eaf0ff;
+  --mgmt-bell-bg: #0b223d;
+  --mgmt-bell-border: rgba(255, 255, 255, 0.12);
+  --mgmt-bell-color: #fff;
+  --mgmt-user-name: #e8edff;
+
+  --mgmt-map-card-bg: #101522;
+  --mgmt-map-card-border: rgba(255, 255, 255, 0.08);
+  --mgmt-map-surface-major: rgba(0, 0, 0, 0.06);
+  --mgmt-map-surface-minor: rgba(0, 0, 0, 0.06);
+  --mgmt-map-surface-base: #ffffff;
+  --mgmt-map-surface-border: rgba(0, 0, 0, 0.08);
+
+  --mgmt-device-bubble-bg: #2c5896;
+  --mgmt-device-bubble-color: #fff;
+
+  --mgmt-dock-panel-bg: #ffffff;
+  --mgmt-dock-panel-color: #0b0c10;
+  --mgmt-dock-panel-border: rgba(0, 0, 0, 0.08);
+  --mgmt-device-border: rgba(0, 0, 0, 0.06);
+  --mgmt-empty-device-color: rgba(11, 12, 16, 0.6);
+  --mgmt-legend-dot-border: rgba(0, 0, 0, 0.15);
+
+  --mgmt-detailbar-bg: #152a4c;
+  --mgmt-detailbar-border: rgba(255, 255, 255, 0.08);
+  --mgmt-detail-label: #c3cee6;
+
+  min-height: 100dvh;
+  background: var(--mgmt-bg);
+  color: var(--mgmt-text);
+  display: grid;
+  grid-template-columns: 260px 1fr;
+}
+
+:global(:root[data-theme="light"]) .page {
+  /* Page & text */
+  --mgmt-bg: #F2F4F7;              /* 页面淡灰 */
+  --mgmt-text: #0B0C0C;            /* 正文深灰黑 */
+  --mgmt-muted: #495057;           /* 次要文字 */
+  --mgmt-accent: #1E67A9;          /* 链接/强调蓝 */
+  --mgmt-primary-btn: #1E67A9;     /* 主要按钮蓝 */
+  --mgmt-shadow: 0 12px 24px rgba(11, 59, 112, 0.18);
+
+  /* Top bar (深海军蓝) */
+  --mgmt-topbar-bg: linear-gradient(180deg, #0C3A74 0%, #0A356A 100%);
+  --mgmt-topbar-border: rgba(255, 255, 255, 0.35);
+  --mgmt-topbar-shadow: 0 14px 28px rgba(11, 59, 112, 0.25);
+
+  /* Left sidebar → 白卡片风格 */
+  --mgmt-sidebar-top: #FFFFFF;
+  --mgmt-sidebar-bottom: #FFFFFF;
+  --mgmt-sidebar-border: #DEE3EA;
+  --mgmt-sidebar-empty-bg: #EFF3F8;
+
+  --mgmt-area-hover-bg: #F1F5FA;
+  --mgmt-area-active-bg: #FFFFFF;
+  --mgmt-area-active-border: #DEE3EA;
+
+  /* Toolbar buttons（顶栏内按钮：透明底、白描边、白字） */
+  --mgmt-toolbar-bg: rgba(255, 255, 255, 0.08);
+  --mgmt-toolbar-border: rgba(255, 255, 255, 0.62);
+  --mgmt-toolbar-color: #FFFFFF;
+  --mgmt-bell-bg: rgba(255, 255, 255, 0.10);
+  --mgmt-bell-border: rgba(255, 255, 255, 0.55);
+  --mgmt-bell-color: #FFFFFF;
+  --mgmt-user-name: #FFFFFF;
+
+  /* Map card & grid（白卡片 + 灰色网格） */
+  --mgmt-map-card-bg: #FFFFFF;
+  --mgmt-map-card-border: #DEE3EA;
+  --mgmt-map-surface-major: rgba(199, 205, 213, 0.9);   /* 粗网格线 */
+  --mgmt-map-surface-minor: rgba(199, 205, 213, 0.45);  /* 细网格线 */
+  --mgmt-map-surface-base: #FFFFFF;
+  --mgmt-map-surface-border: #C7CDD5;
+
+  /* 中部设备气泡（蓝底白字） */
+  --mgmt-device-bubble-bg: #2C5896;
+  --mgmt-device-bubble-color: #FFFFFF;
+
+  /* 右下停靠面板（白卡片） */
+  --mgmt-dock-panel-bg: #FFFFFF;
+  --mgmt-dock-panel-color: #0B0C0C;
+  --mgmt-dock-panel-border: #DEE3EA;
+  --mgmt-device-border: #E4E8EF;
+  --mgmt-empty-device-color: rgba(11, 12, 16, 0.60);
+  --mgmt-legend-dot-border: #D0D6DF;
+
+  /* 底部详情条（深海军蓝） */
+  --mgmt-detailbar-bg: #0B3B70;
+  --mgmt-detailbar-border: rgba(255, 255, 255, 0.30);
+  --mgmt-detail-label: rgba(255, 255, 255, 0.85);
+}
+
+@media (prefers-color-scheme: light) {
+  :global(:root:not([data-theme])) .page {
+    /* Page & text */
+    --mgmt-bg: #F2F4F7;              /* 页面淡灰 */
+    --mgmt-text: #0B0C0C;            /* 正文深灰黑 */
+    --mgmt-muted: #495057;           /* 次要文字 */
+    --mgmt-accent: #1E67A9;          /* 链接/强调蓝 */
+    --mgmt-primary-btn: #1E67A9;     /* 主要按钮蓝 */
+    --mgmt-shadow: 0 12px 24px rgba(11, 59, 112, 0.18);
+
+    /* Top bar (深海军蓝) */
+    --mgmt-topbar-bg: linear-gradient(180deg, #0C3A74 0%, #0A356A 100%);
+    --mgmt-topbar-border: rgba(255, 255, 255, 0.35);
+    --mgmt-topbar-shadow: 0 14px 28px rgba(11, 59, 112, 0.25);
+
+    /* Left sidebar → 白卡片风格 */
+    --mgmt-sidebar-top: #FFFFFF;
+    --mgmt-sidebar-bottom: #FFFFFF;
+    --mgmt-sidebar-border: #DEE3EA;
+    --mgmt-sidebar-empty-bg: #EFF3F8;
+
+    --mgmt-area-hover-bg: #F1F5FA;
+    --mgmt-area-active-bg: #FFFFFF;
+    --mgmt-area-active-border: #DEE3EA;
+
+    /* Toolbar buttons（顶栏内按钮：透明底、白描边、白字） */
+    --mgmt-toolbar-bg: rgba(255, 255, 255, 0.08);
+    --mgmt-toolbar-border: rgba(255, 255, 255, 0.62);
+    --mgmt-toolbar-color: #FFFFFF;
+    --mgmt-bell-bg: rgba(255, 255, 255, 0.10);
+    --mgmt-bell-border: rgba(255, 255, 255, 0.55);
+    --mgmt-bell-color: #FFFFFF;
+    --mgmt-user-name: #FFFFFF;
+
+    /* Map card & grid（白卡片 + 灰色网格） */
+    --mgmt-map-card-bg: #FFFFFF;
+    --mgmt-map-card-border: #DEE3EA;
+    --mgmt-map-surface-major: rgba(199, 205, 213, 0.9);   /* 粗网格线 */
+    --mgmt-map-surface-minor: rgba(199, 205, 213, 0.45);  /* 细网格线 */
+    --mgmt-map-surface-base: #FFFFFF;
+    --mgmt-map-surface-border: #C7CDD5;
+
+    /* 中部设备气泡（蓝底白字） */
+    --mgmt-device-bubble-bg: #2C5896;
+    --mgmt-device-bubble-color: #FFFFFF;
+
+    /* 右下停靠面板（白卡片） */
+    --mgmt-dock-panel-bg: #FFFFFF;
+    --mgmt-dock-panel-color: #0B0C0C;
+    --mgmt-dock-panel-border: #DEE3EA;
+    --mgmt-device-border: #E4E8EF;
+    --mgmt-empty-device-color: rgba(11, 12, 16, 0.60);
+    --mgmt-legend-dot-border: #D0D6DF;
+
+    /* 底部详情条（深海军蓝） */
+    --mgmt-detailbar-bg: #0B3B70;
+    --mgmt-detailbar-border: rgba(255, 255, 255, 0.30);
+    --mgmt-detail-label: rgba(255, 255, 255, 0.85);
+  }
+}
+
+/* 左侧栏 */
+.sidebar {
+  background: linear-gradient(180deg, var(--mgmt-sidebar-top), var(--mgmt-sidebar-bottom));
+  border-right: 1px solid var(--mgmt-sidebar-border);
+  padding: 24px 18px;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 20px;
+}
+
+.sideTitle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1px;
+  opacity: 0.95;
+}
+
+.sideTitleLabel {
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.6px;
+}
+
+.logoLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.logoLink:hover {
+  background: var(--mgmt-area-hover-bg);
+  border-color: var(--mgmt-sidebar-border);
+  transform: translateY(-1px);
+}
+
+.logoWrapper {
+  position: relative;
+  width: 75px;
+  height: 70px;
+  display: inline-block;
+}
+
+.logoImage {
+  display: block;
+}
+
+.logoWrapper .logoImage {
+  position: absolute;
+  inset: 0;
+}
+
+.logoDark { display: none; }
+
+:global(:root[data-theme="dark"]) .logoDark,
+:global(:root:not([data-theme])) .logoDark {
+  display: block;
+}
+
+:global(:root[data-theme="dark"]) .logoLight,
+:global(:root:not([data-theme])) .logoLight {
+  display: none;
+}
+
+:global(:root[data-theme="light"]) .logoDark {
+  display: none;
+}
+
+:global(:root[data-theme="light"]) .logoLight {
+  display: block;
+}
+
+@media (prefers-color-scheme: light) {
+  :global(:root:not([data-theme])) .logoDark {
+    display: none;
+  }
+
+  :global(:root:not([data-theme])) .logoLight {
+    display: block;
+  }
+}
+
+.createBtn {
+  background: var(--mgmt-primary-btn);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-weight: 700;
+  box-shadow: var(--mgmt-shadow);
+  cursor: pointer;
+}
+
+.areaList {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.emptyMessage {
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--mgmt-muted);
+  font-size: 14px;
+  background: var(--mgmt-sidebar-empty-bg);
+  border-radius: 10px;
+}
+
+.areaItem {
+  text-align: left;
+  width: 100%;
+  background: transparent;
+  color: var(--mgmt-text);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+}
+
+.areaItem:hover { background: var(--mgmt-area-hover-bg); }
+.areaItemActive {
+  background: var(--mgmt-area-active-bg);
+  border-color: var(--mgmt-area-active-border);
+}
+.areaName { font-weight: 700; }
+.areaStatus { color: var(--mgmt-muted); font-size: 13px; margin-top: 2px; }
+
+/* 右侧主区域 */
+.main { padding: 22px 22px 28px; }
+
+/* 顶部 */
+.topbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding: 18px 20px;
+  background: var(--mgmt-topbar-bg);
+  border: 1px solid var(--mgmt-topbar-border);
+  border-radius: var(--mgmt-radius-lg);
+  box-shadow: var(--mgmt-topbar-shadow);
+}
+
+.toolbar {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 18px;
+  justify-content: start;
+}
+
+.toolbarBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: var(--mgmt-toolbar-bg);
+  border: 1px solid var(--mgmt-toolbar-border);
+  border-radius: 12px;
+  color: var(--mgmt-toolbar-color);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--mgmt-shadow);
+}
+
+.toolbarBtn:hover {
+  background-color: var(--mgmt-primary-btn);
+}
+
+.toolbarBtnDanger:hover {
+  background-color: color-mix(in srgb, var(--destructive) 85%, #000);
+}
+
+.toolbarBtnDanger {
+  --mgmt-toolbar-bg: var(--destructive);
+  border: 1px solid var(--mgmt-toolbar-border);
+}
+
+.toolbarIcon { display: inline-grid; place-items: center; }
+
+.userCluster { display: inline-flex; align-items: center; gap: 12px; }
+.bell {
+  position: relative;
+  height: 40px; width: 40px;
+  display: inline-grid; place-items: center;
+  background: var(--mgmt-bell-bg);
+  border: 1px solid var(--mgmt-bell-border);
+  border-radius: 12px;
+  color: var(--mgmt-bell-color);
+}
+.userName { color: var(--mgmt-user-name); }
+
+/* 地图卡片 */
+.mapCard {
+  position: relative;
+  background: var(--mgmt-map-card-bg);
+  border: 1px solid var(--mgmt-map-card-border);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: var(--mgmt-shadow);
+}
+
+.mapSurface {
+  height: 520px;
+  background:
+    linear-gradient(90deg, var(--mgmt-map-surface-major) 1px, transparent 1px),
+    linear-gradient(var(--mgmt-map-surface-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--mgmt-map-surface-minor) 1px, transparent 1px),
+    linear-gradient(var(--mgmt-map-surface-minor) 1px, transparent 1px),
+    var(--mgmt-map-surface-base);
+  background-size: 80px 80px, 80px 80px;
+  border-radius: 12px;
+  border: 1px solid var(--mgmt-map-surface-border);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 中部设备气泡（位置固定，仅占位） */
+.deviceBubble {
+  position: absolute;
+  left: 44%;
+  top: 38%;
+  transform: translate(-50%, -50%);
+  background: var(--mgmt-device-bubble-bg);
+  color: var(--mgmt-device-bubble-color);
+  padding: 14px 18px;
+  border-radius: 18px;
+  box-shadow: var(--mgmt-shadow);
+  min-width: 220px;
+}
+.deviceBubbleTitle {
+  font-weight: 800; margin-bottom: 4px;
+}
+.deviceBubbleLine { opacity: 0.95; }
+
+/* 右下角白色停靠面板 */
+.dockPanel {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  width: 260px;
+  background: var(--mgmt-dock-panel-bg);
+  color: var(--mgmt-dock-panel-color);
+  border: 1px solid var(--mgmt-dock-panel-border);
+  border-radius: 16px;
+  padding: 14px 12px;
+  box-shadow: var(--mgmt-shadow);
+}
+
+.dockTitle { font-weight: 800; margin-bottom: 10px; }
+.deviceList { list-style: none; margin: 0; padding: 0; }
+.deviceItem {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 8px;
+  border-bottom: 1px solid var(--mgmt-device-border);
+  font-size: 14px;
+}
+.deviceItem:last-child { border-bottom: none; }
+.emptyListItem {
+  padding: 16px 8px;
+  text-align: center;
+  color: var(--mgmt-empty-device-color);
+  font-size: 13px;
+}
+.tick { font-weight: 900; }
+
+.legend { display: grid; gap: 8px; padding-top: 10px; }
+.legendRow { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+.legendDot {
+  width: 12px; height: 12px; border-radius: 4px;
+  border: 1px solid var(--mgmt-legend-dot-border);
+}
+
+/* 底部详情条 */
+.detailBar {
+  margin-top: 16px;
+  background: var(--mgmt-detailbar-bg);
+  border: 1px solid var(--mgmt-detailbar-border);
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: var(--mgmt-shadow);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px 24px;
+  align-items: center;
+}
+.detailTitle {
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  color: #ffffff;
+}
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px 16px;
+}
+.detailItem {}
+.detailLabel { color: var(--mgmt-detail-label); font-size: 13px; margin-bottom: 4px; }
+.detailValue { font-weight: 800; }

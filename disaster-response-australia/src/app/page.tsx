@@ -1,40 +1,43 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { AlertTriangle, CheckCircle2, Search, Maximize2 } from "lucide-react";
+import LoginModal from "./components/LoginModal";
 
-/**
- * Next.js (App Router) 单文件页面占位实现
- * - 所有数据位留白（以“—”显示），以后直接替换 DATA 对象或接入 API 即可
- * - 地图区域留出 <div id="map"/> 容器，后续自行接入任意地图 SDK（Mapbox/Leaflet/ArcGIS/高德/百度等）
- * - 使用 Tailwind CSS 进行样式（建议在项目中已启用 Tailwind）
- *
- * 使用方法：
- * 1) 在 app/ 目录下新建 (dashboard)/page.tsx 或直接作为 app/page.tsx 使用
- * 2) 接入地图：在 MapCard 的 <div id="map"/> 中挂载你自己的地图实例
- * 3) 对接数据：将 DATA 替换成你的 API 返回值或 Server Actions
- */
+// /**
+//  * Placeholder implementation for a single-file Next.js (App Router) page.
+//  * - All data fields are left blank (displayed as "—"), ready to be replaced with a DATA object or API calls.
+//  * - A <div id="map"/> container is reserved for future integration with any map SDK (Mapbox, Leaflet, ArcGIS, etc.).
+//  * - Styling is done with Tailwind CSS (assuming Tailwind is set up in the project).
+//  *
+//  * How to use:
+//  * 1) Create this as `(dashboard)/page.tsx` under the `app/` directory or use it directly as `app/page.tsx`.
+//  * 2) Integrate a map: Mount your map instance inside the `<div id="map"/>` in the `MapCard` component.
+//  * 3) Connect data: Replace the `DATA` object with your API responses or Server Actions.
+//  */
 
-// ====== 占位数据（全部可替换） ======
+// ====== Placeholder data (all replaceable) ======
 const DATA = {
-  activeAreaName: "", // 例如 "Whitehorse"
-  resolvedAreas: "", // 例如 2
-  affectedPopulation: "", // 例如 4513
-  survivorsWithGps: "", // 例如 42
+  activeAreaName: "", // e.g., "Whitehorse"
+  resolvedAreas: "", // e.g., 2
+  affectedPopulation: "", // e.g., 4513
+  survivorsWithGps: "", // e.g., 42
   latestReleases: [] as { title: string; href?: string }[],
 };
 
-// 一个小工具：把空值显示为 "—"
+// A small utility to display empty values as "—"
 const asPlaceholder = (v: React.ReactNode) => (v === undefined || v === null || v === "" ? "—" : v);
 
 export default function DashboardPage() {
+  const [isLoginModalOpen, setLoginModalOpen] = useState(false);
+
   return (
     <main className="min-h-screen bg-background text-foreground">
-      {/* 顶部导航 */}
+      {/* Top navigation bar */}
       <header className="bg-[#0C1E3B] text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          {/* 左侧 Logo 与标题 */}
+          {/* Left side: Logo and title */}
           <div className="flex items-center gap-3">
             <Image src="/logo.svg" alt="Disaster Response Australia Logo" width={80} height={80} />
             <div>
@@ -42,25 +45,21 @@ export default function DashboardPage() {
               <div className="text-lg font-semibold -mt-0.5">Australia</div>
             </div>
           </div>
-          {/* 右侧操作区 */}
+          {/* Right side: Actions */}
           <div className="flex items-center gap-3">
-            <a
+            <button
+              onClick={() => setLoginModalOpen(true)}
               className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur hover:bg-white/15"
-              href="#"
             >
-              🏛️ Sign up (for government)
-            </a>
-            <a
-              className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur hover:bg-white/15"
-              href="#"
-            >
-              🛟 Sign up (for rescuer)
-            </a>
+              Sign In / Sign Up
+            </button>
           </div>
         </div>
       </header>
 
-      {/* 指标卡片 */}
+      {isLoginModalOpen && <LoginModal onClose={() => setLoginModalOpen(false)} />}
+
+      {/* Statistic cards */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard title="Active Disaster Areas" value={asPlaceholder(DATA.activeAreaName)} />
         <StatCard title="Resolved Areas" value={asPlaceholder(DATA.resolvedAreas)} />
@@ -68,9 +67,9 @@ export default function DashboardPage() {
         <StatCard title="Survivors Sharing GPS Total" value={asPlaceholder(DATA.survivorsWithGps)} />
       </section>
 
-      {/* 主体布局 */}
+      {/* Main layout */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-6 grid grid-cols-1 xl:grid-cols-[360px_minmax(0,1fr)] gap-6 pb-10">
-        {/* 左侧：Latest Release */}
+        {/* Left side: Latest Release */}
         <aside className="rounded-2xl bg-card shadow-sm ring-1 ring-border overflow-hidden">
           <div className="bg-[#0C1E3B] text-white px-4 py-3 text-base font-semibold">Latest Release</div>
           <div className="p-0 divide-y divide-border">
@@ -94,28 +93,28 @@ export default function DashboardPage() {
           </div>
         </aside>
 
-        {/* 右侧：地图卡片 */}
+        {/* Right side: Map card */}
         <MapCard />
       </section>
     </main>
   );
 }
 
-// ====== 组件区域 ======
+// ====== Component Area ======
 function StatCard({ title, value }: { title: string; value: React.ReactNode }) {
   return (
     <div className="rounded-2xl bg-card shadow-sm ring-1 ring-border p-5">
-      <div className="text-sm text-muted-foreground">{title}</div>
+      <div className="text-sm text-muted-foreground font-extrabold">{title}</div>
       <div className="mt-1 text-3xl font-bold tracking-tight">{value}</div>
     </div>
   );
 }
 
 function EmptyReleaseList() {
-  // 空状态：展示 3 条骨架占位
+  // Empty state: show 3 skeleton placeholders
   return (
     <div className="px-4 py-6">
-      <p className="text-sm text-muted-foreground mb-3">暂无更新，发布内容将显示在此处。</p>
+      <p className="text-sm text-muted-foreground mb-3">No updates yet. Releases will be shown here.</p>
       <ul className="space-y-2">
         {[1, 2, 3].map((i) => (
           <li key={i} className="h-10 w-full rounded-md bg-muted animate-pulse" />
@@ -128,7 +127,7 @@ function EmptyReleaseList() {
 function MapCard() {
   return (
     <div className="relative rounded-2xl bg-card shadow-sm ring-1 ring-border overflow-hidden">
-      {/* 顶部过滤条 */}
+      {/* Top filter bar */}
       <div className="absolute right-4 top-4 z-10 flex flex-col gap-3 w-72 max-w-[90vw]">
         <SelectLike label="Disaster Type" />
         <SelectLike label="Rescue Status" />
@@ -143,32 +142,32 @@ function MapCard() {
         </div>
       </div>
 
-      {/* 地图容器 */}
+      {/* Map container */}
       <div className="h-[640px] bg-secondary">
         <div
           id="map"
           className="h-full w-full grid place-items-center border-2 border-dashed border-border"
         >
           <div className="text-center">
-            <div className="text-sm text-muted-foreground">地图容器（占位）</div>
-            <div className="text-xs text-muted-foreground mt-1">在此处挂载你的地图 API（Mapbox/Leaflet/高德/百度/ArcGIS 等）</div>
+            <div className="text-sm text-muted-foreground">Map Container (Placeholder)</div>
+            <div className="text-xs text-muted-foreground mt-1">Mount your map API here (e.g., Mapbox, Leaflet, ArcGIS)</div>
           </div>
         </div>
       </div>
 
-      {/* 左下角图例 */}
+      {/* Bottom-left legend */}
       <div className="absolute left-4 bottom-4 z-10 rounded-xl bg-popover/90 ring-1 ring-border px-3 py-2 shadow">
         <div className="flex items-center gap-2 text-sm">
-          <AlertTriangle className="h-4 w-4" />
+          <AlertTriangle className="h-4 w-4 text-red-500" />
           <span>Disaster area</span>
         </div>
         <div className="mt-1 flex items-center gap-2 text-sm">
-          <CheckCircle2 className="h-4 w-4" />
+          <CheckCircle2 className="h-4 w-4 text-green-500" />
           <span>Safe area</span>
         </div>
       </div>
 
-      {/* 右下角全屏按钮（占位） */}
+      {/* Bottom-right fullscreen button (placeholder) */}
       <button
         type="button"
         className="absolute right-4 bottom-4 z-10 rounded-xl bg-popover/90 ring-1 ring-border p-2 shadow hover:bg-popover"
@@ -184,7 +183,7 @@ function SelectLike({ label }: { label: string }) {
   return (
     <div className="flex items-center justify-between rounded-xl bg-popover/90 ring-1 ring-border px-3 py-2 shadow-sm">
       <span className="text-sm text-popover-foreground">{label}</span>
-      <span className="text-xs text-muted-foreground">（占位）</span>
+      <span className="text-xs text-muted-foreground">(Placeholder)</span>
     </div>
   );
 }
