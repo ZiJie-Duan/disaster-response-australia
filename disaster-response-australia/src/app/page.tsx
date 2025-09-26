@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { AlertTriangle, CheckCircle2, Search, Maximize2 } from "lucide-react";
 import LoginModal from "./components/LoginModal";
+import Map from "./components/map";
 
 // /**
 //  * Placeholder implementation for a single-file Next.js (App Router) page.
@@ -146,12 +147,9 @@ function MapCard() {
       <div className="h-[640px] bg-secondary">
         <div
           id="map"
-          className="h-full w-full grid place-items-center border-2 border-dashed border-border"
+          className="h-full w-full border-2 border-dashed border-border"
         >
-          <div className="text-center">
-            <div className="text-sm text-muted-foreground">Map Container (Placeholder)</div>
-            <div className="text-xs text-muted-foreground mt-1">Mount your map API here (e.g., Mapbox, Leaflet, ArcGIS)</div>
-          </div>
+          <Map editable={false} />
         </div>
       </div>
 

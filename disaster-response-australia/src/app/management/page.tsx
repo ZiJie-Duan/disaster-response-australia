@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import styles from './management.module.css';
+import Map from '../components/map';
 
 type AreaStatus = 'Active Disaster' | 'Resolved' | 'Safe';
 
@@ -171,7 +172,11 @@ export default function DisasterAreaManagementPage() {
 
         {/* 地图卡片（空容器） */}
         <div className={styles.mapCard}>
-          <div ref={mapRef} id="map-container" className={styles.mapSurface} />
+
+          {/* 地图容器 */}
+          <div ref={mapRef} id="map-container" className={styles.mapSurface} >
+             <Map editable={true} />
+          </div>
 
           {/* "Verified Device" bubble in the middle (UI placeholder only) */}
           {/* TODO[map]: This will be replaced by a map Marker/Popup, positioned by device coordinates */}
