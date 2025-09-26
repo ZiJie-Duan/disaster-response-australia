@@ -58,7 +58,11 @@ function processSnapshotForUndo(snapshot: any[]): any[] {
 
 type ModeId = 'select' | 'point' | 'linestring' | 'polygon' | 'rectangle' | 'circle' | 'freehand' | 'static';
 
-export default function TerraDrawAdvancedPage() {
+interface TerraDrawAdvancedPageProps {
+  editable: boolean,
+};
+
+export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdvancedPageProps ) {
   const mapDivRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const drawRef = useRef<TerraDraw | null>(null);
@@ -72,7 +76,7 @@ export default function TerraDrawAdvancedPage() {
   const [activeMode, setActiveMode] = useState<ModeId>('point');
   const [resizingEnabled, setResizingEnabled] = useState<boolean>(false);
 
-  // 模式切换函数
+  // Mode switching function
   const switchMode = (mode: ModeId) => {
     if (!drawRef.current) return;
     
@@ -85,7 +89,7 @@ export default function TerraDrawAdvancedPage() {
     setActiveMode(mode);
   };
 
-  // 导出 GeoJSON
+  // Export GeoJSON
   const exportGeoJSON = () => {
     if (!drawRef.current) return;
     
@@ -104,7 +108,7 @@ export default function TerraDrawAdvancedPage() {
     URL.revokeObjectURL(url);
   };
 
-  // 导入 GeoJSON
+  // Import GeoJSON
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !drawRef.current) return;
@@ -125,7 +129,7 @@ export default function TerraDrawAdvancedPage() {
     reader.readAsText(file);
   };
 
-  // 删除选中的特征
+  // Delete selected feature
   const deleteSelected = () => {
     if (!drawRef.current) return;
     
@@ -142,7 +146,7 @@ export default function TerraDrawAdvancedPage() {
     }
   };
 
-  // 撤销
+  // Undo
   const undo = () => {
     if (!drawRef.current || historyRef.current.length <= 1) return;
     
@@ -154,7 +158,7 @@ export default function TerraDrawAdvancedPage() {
     setTimeout(() => { isRestoringRef.current = false; }, 0);
   };
 
-  // 重做
+  // Redo
   const redo = () => {
     if (!drawRef.current || redoHistoryRef.current.length === 0) return;
     
@@ -166,7 +170,7 @@ export default function TerraDrawAdvancedPage() {
     setTimeout(() => { isRestoringRef.current = false; }, 0);
   };
 
-  // 切换调整大小模式
+  // Toggle resize mode
   const toggleResize = () => {
     if (!drawRef.current) return;
     
@@ -373,7 +377,7 @@ export default function TerraDrawAdvancedPage() {
               selectedFeatureIdRef.current = null;
             });
 
-            // 初始化历史记录
+            // Initialize history
             historyRef.current.push(processSnapshotForUndo(draw.getSnapshot()));
 
             draw.on("change", (ids, type) => {
@@ -396,7 +400,7 @@ export default function TerraDrawAdvancedPage() {
               }, 200);
             });
 
-            // 键盘事件监听
+            // Keyboard event listener
             const handleKeyDown = (event: KeyboardEvent) => {
               if (event.key === 'r' && selectedFeatureIdRef.current) {
                 const features = draw.getSnapshot();
@@ -411,7 +415,7 @@ export default function TerraDrawAdvancedPage() {
 
             document.addEventListener('keydown', handleKeyDown);
             
-            // 返回清理函数
+            // Return cleanup function
             return () => {
               document.removeEventListener('keydown', handleKeyDown);
             };
@@ -428,7 +432,7 @@ export default function TerraDrawAdvancedPage() {
     return () => {
       cancelled = true;
 
-      // 清理 TerraDraw
+      // Cleanup TerraDraw
       if (drawRef.current) {
         try {
           drawRef.current.stop();
@@ -436,13 +440,13 @@ export default function TerraDrawAdvancedPage() {
         drawRef.current = null;
       }
 
-      // 清理事件监听器
+      // Cleanup event listener
       if (projectionListener) {
         projectionListener.remove();
         projectionListener = null;
       }
 
-      // 清理定时器
+      // Cleanup timer
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
       }
@@ -451,7 +455,7 @@ export default function TerraDrawAdvancedPage() {
     };
   }, []);
 
-  // 旋转特征的辅助函数
+  // Helper function for rotating features
   const rotateFeature = (feature: any, angle: number) => {
     const newFeature = JSON.parse(JSON.stringify(feature));
     const coordinates = newFeature.geometry.coordinates;
@@ -487,155 +491,161 @@ export default function TerraDrawAdvancedPage() {
 
   return (
     <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* 工具栏 */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 8,
-          padding: 12,
-          borderBottom: '1px solid #eee',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          backgroundColor: '#f8f9fa',
-        }}
-      >
-        {/* 绘制模式按钮 */}
-        {([
-          { id: 'select', label: '选择', icon: '🎯' },
-          { id: 'point', label: '点', icon: '📍' },
-          { id: 'linestring', label: '线', icon: '📏' },
-          { id: 'polygon', label: '多边形', icon: '🔷' },
-          { id: 'rectangle', label: '矩形', icon: '⬜' },
-          { id: 'circle', label: '圆形', icon: '⭕' },
-          { id: 'freehand', label: '自由绘制', icon: '✏️' },
-          { id: 'static', label: '清空', icon: '🗑️' },
-        ] as { id: ModeId; label: string; icon: string }[]).map((mode) => (
-          <button
-            key={mode.id}
-            onClick={() => switchMode(mode.id)}
+      {/* Toolbar */}
+
+      { editable ? (
+        <>
+          <div
             style={{
-              padding: '8px 12px',
-              borderRadius: 6,
-              border: '1px solid #ddd',
-              background: activeMode === mode.id ? '#007bff' : '#fff',
-              color: activeMode === mode.id ? '#fff' : '#333',
-              cursor: 'pointer',
-              fontSize: 14,
               display: 'flex',
+              gap: 8,
+              padding: 12,
+              borderBottom: '1px solid #eee',
               alignItems: 'center',
-              gap: 6,
-              transition: 'all 0.2s',
+              flexWrap: 'wrap',
+              backgroundColor: '#f8f9fa',
             }}
           >
-            <span>{mode.icon}</span>
-            {mode.label}
-          </button>
-        ))}
+            {/* Drawing mode buttons */}
+            {([
+              { id: 'select', label: 'Select', icon: '🎯' },
+              { id: 'point', label: 'Point', icon: '📍' },
+              { id: 'linestring', label: 'Line', icon: '📏' },
+              { id: 'polygon', label: 'Polygon', icon: '🔷' },
+              { id: 'rectangle', label: 'Rectangle', icon: '⬜' },
+              { id: 'circle', label: 'Circle', icon: '⭕' },
+              { id: 'freehand', label: 'Freehand', icon: '✏️' },
+              { id: 'static', label: 'Clear', icon: '🗑️' },
+            ] as { id: ModeId; label: string; icon: string }[]).map((mode) => (
+              <button
+                key={mode.id}
+                onClick={() => switchMode(mode.id)}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: 6,
+                  border: '1px solid #ddd',
+                  background: activeMode === mode.id ? '#007bff' : '#fff',
+                  color: activeMode === mode.id ? '#fff' : '#333',
+                  cursor: 'pointer',
+                  fontSize: 14,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  transition: 'all 0.2s',
+                }}
+              >
+                <span>{mode.icon}</span>
+                {mode.label}
+              </button>
+            ))}
 
-        <div style={{ width: 1, height: 30, backgroundColor: '#ddd', margin: '0 8px' }} />
+            <div style={{ width: 1, height: 30, backgroundColor: '#ddd', margin: '0 8px' }} />
 
-        {/* 调整大小按钮 */}
-        <button
-          onClick={toggleResize}
-          style={{
-            padding: '8px 12px',
-            borderRadius: 6,
-            border: '1px solid #ddd',
-            background: resizingEnabled ? '#28a745' : '#fff',
-            color: resizingEnabled ? '#fff' : '#333',
-            cursor: 'pointer',
-            fontSize: 14,
-          }}
-        >
-          🔄 调整大小
-        </button>
+            {/* Resize button */}
+            <button
+              onClick={toggleResize}
+              style={{
+                padding: '8px 12px',
+                borderRadius: 6,
+                border: '1px solid #ddd',
+                background: resizingEnabled ? '#28a745' : '#fff',
+                color: resizingEnabled ? '#fff' : '#333',
+                cursor: 'pointer',
+                fontSize: 14,
+              }}
+            >
+              🔄 Resize
+            </button>
 
-        <div style={{ width: 1, height: 30, backgroundColor: '#ddd', margin: '0 8px' }} />
+            <div style={{ width: 1, height: 30, backgroundColor: '#ddd', margin: '0 8px' }} />
 
-        {/* 撤销重做按钮 */}
-        <button
-          onClick={undo}
-          style={{
-            padding: '8px 12px',
-            borderRadius: 6,
-            border: '1px solid #ddd',
-            background: '#fff',
-            color: '#333',
-            cursor: 'pointer',
-            fontSize: 14,
-          }}
-        >
-          ↶ 撤销
-        </button>
-        <button
-          onClick={redo}
-          style={{
-            padding: '8px 12px',
-            borderRadius: 6,
-            border: '1px solid #ddd',
-            background: '#fff',
-            color: '#333',
-            cursor: 'pointer',
-            fontSize: 14,
-          }}
-        >
-          ↷ 重做
-        </button>
+            {/* Undo/Redo buttons */}
+            <button
+              onClick={undo}
+              style={{
+                padding: '8px 12px',
+                borderRadius: 6,
+                border: '1px solid #ddd',
+                background: '#fff',
+                color: '#333',
+                cursor: 'pointer',
+                fontSize: 14,
+              }}
+            >
+              ↶ Undo
+            </button>
+            <button
+              onClick={redo}
+              style={{
+                padding: '8px 12px',
+                borderRadius: 6,
+                border: '1px solid #ddd',
+                background: '#fff',
+                color: '#333',
+                cursor: 'pointer',
+                fontSize: 14,
+              }}
+            >
+              ↷ Redo
+            </button>
 
-        <div style={{ width: 1, height: 30, backgroundColor: '#ddd', margin: '0 8px' }} />
+            <div style={{ width: 1, height: 30, backgroundColor: '#ddd', margin: '0 8px' }} />
 
-        {/* 删除按钮 */}
-        <button
-          onClick={deleteSelected}
-          style={{
-            padding: '8px 12px',
-            borderRadius: 6,
-            border: '1px solid #dc3545',
-            background: '#fff',
-            color: '#dc3545',
-            cursor: 'pointer',
-            fontSize: 14,
-          }}
-        >
-          🗑️ 删除
-        </button>
+            {/* Delete button */}
+            <button
+              onClick={deleteSelected}
+              style={{
+                padding: '8px 12px',
+                borderRadius: 6,
+                border: '1px solid #dc3545',
+                background: '#fff',
+                color: '#dc3545',
+                cursor: 'pointer',
+                fontSize: 14,
+              }}
+            >
+              🗑️ Delete
+            </button>
 
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-          {/* 上传按钮 */}
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            style={{
-              padding: '8px 12px',
-              borderRadius: 6,
-              border: '1px solid #6c757d',
-              background: '#fff',
-              color: '#6c757d',
-              cursor: 'pointer',
-              fontSize: 14,
-            }}
-          >
-            📁 导入
-          </button>
-          
-          {/* 导出按钮 */}
-          <button
-            onClick={exportGeoJSON}
-            style={{
-              padding: '8px 12px',
-              borderRadius: 6,
-              border: '1px solid #17a2b8',
-              background: '#17a2b8',
-              color: '#fff',
-              cursor: 'pointer',
-              fontSize: 14,
-            }}
-          >
-            💾 导出
-          </button>
-        </div>
-      </div>
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+              {/* Import button */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: 6,
+                  border: '1px solid #6c757d',
+                  background: '#fff',
+                  color: '#6c757d',
+                  cursor: 'pointer',
+                  fontSize: 14,
+                }}
+              >
+                📁 Import
+              </button>
+              
+              {/* Export button */}
+              <button
+                onClick={exportGeoJSON}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: 6,
+                  border: '1px solid #17a2b8',
+                  background: '#17a2b8',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontSize: 14,
+                }}
+              >
+                💾 Export
+              </button>
+            </div>
+          </div>
 
-      {/* 地图容器 */}
+        </>
+      ) : null }
+
+      {/* Map container */}
       <div 
         ref={mapDivRef} 
         style={{ 
@@ -645,7 +655,7 @@ export default function TerraDrawAdvancedPage() {
         }} 
       />
       
-      {/* 隐藏的文件输入 */}
+      {/* Hidden file input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -654,7 +664,7 @@ export default function TerraDrawAdvancedPage() {
         style={{ display: 'none' }}
       />
 
-      {/* 帮助提示 */}
+      {/* Help tips */}
       <div
         style={{
           position: 'absolute',
@@ -668,10 +678,10 @@ export default function TerraDrawAdvancedPage() {
           maxWidth: 300,
         }}
       >
-        <div><strong>快捷键：</strong></div>
-        <div>• 按 R 键旋转选中的图形</div>
-        <div>• 点击图形进行选择和编辑</div>
-        <div>• 拖拽图形进行移动</div>
+        <div><strong>Shortcuts:</strong></div>
+        <div>• Press R to rotate selected shape</div>
+        <div>• Click shape to select and edit</div>
+        <div>• Drag shape to move</div>
       </div>
     </div>
   );

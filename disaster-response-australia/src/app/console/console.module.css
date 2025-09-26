@@ -1,0 +1,415 @@
+.page {
+  --console-bell-top: #151e33;
+  --console-bell-bottom: #0f1729;
+  --console-bell-border: rgba(255, 255, 255, 0.08);
+
+  --console-card-top: #121d32;
+  --console-card-bottom: #0e1626;
+  --console-border-weak: rgba(255, 255, 255, 0.06);
+  --console-border-strong: rgba(255, 255, 255, 0.08);
+
+  --console-select-bg: #172544;
+  --console-select-text: #e8edff;
+  --console-select-border: rgba(255, 255, 255, 0.08);
+  --console-select-focus-border: rgba(122, 162, 255, 0.65);
+  --console-select-focus-shadow: 0 0 0 3px rgba(122, 162, 255, 0.2);
+  --console-select-chevron: #c9d4ff;
+
+  --console-kpi-title: #b9c4dd;
+
+  --console-mapcard-top: #0e1424;
+  --console-mapcard-bottom: #0a111f;
+  --console-map-grid-strong: rgba(255, 255, 255, 0.08);
+  --console-map-grid-faint: rgba(255, 255, 255, 0.05);
+  --console-map-bg: #1b2236;
+
+  --console-demo-border: #ff7b7b;
+  --console-demo-fill: rgba(255, 60, 60, 0.15);
+  --console-demo-pin-bg: #d94a4a;
+  --console-demo-pin-color: #fff;
+  --console-demo-pin-shadow: 0 10px 16px rgba(0, 0, 0, 0.25);
+  --console-demo-badge-bg: rgba(0, 0, 0, 0.85);
+  --console-demo-badge-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+
+  --console-rightpanel-top: #0e1729;
+  --console-rightpanel-bottom: #0b1323;
+
+  --console-alert-bg: #152446;
+  --console-alert-border: rgba(255, 255, 255, 0.08);
+  --console-alert-line: #dfe6ff;
+  --console-alert-sub: #c3ceef;
+  --console-rightpanel-text: var(--console-text);
+  --console-bell-color: var(--console-text);
+  --console-header-title: var(--console-text);
+  --console-header-bg: transparent;
+  --console-header-border: transparent;
+  --console-header-shadow: none;
+
+  min-height: 100dvh;
+  background: var(--console-bg);
+  color: var(--console-text);
+  padding: 28px 24px 40px;
+  box-sizing: border-box;
+}
+
+:global(:root[data-theme="light"]) .page {
+  --console-bg: #dfe3ec;
+  --console-bell-top: #0f2f63;
+  --console-bell-bottom: #0b2349;
+  --console-bell-border: rgba(255, 255, 255, 0.4);
+
+  --console-card-top: #ffffff;
+  --console-card-bottom: #f3f5fa;
+  --console-border-weak: rgba(13, 33, 70, 0.25);
+  --console-border-strong: rgba(13, 33, 70, 0.35);
+
+  --console-select-bg: #ffffff;
+  --console-select-text: #0d2550;
+  --console-select-border: rgba(13, 33, 70, 0.3);
+  --console-select-focus-border: rgba(13, 33, 70, 0.6);
+  --console-select-focus-shadow: 0 0 0 3px rgba(17, 52, 109, 0.22);
+  --console-select-chevron: #0d2550;
+
+  --console-kpi-title: rgba(13, 37, 80, 0.75);
+
+  --console-mapcard-top: #ffffff;
+  --console-mapcard-bottom: #ecf0f8;
+  --console-map-grid-strong: rgba(13, 33, 70, 0.12);
+  --console-map-grid-faint: rgba(13, 33, 70, 0.06);
+  --console-map-bg: #f7f9fe;
+
+  --console-demo-pin-shadow: 0 10px 16px rgba(13, 33, 70, 0.2);
+  --console-demo-badge-bg: rgba(13, 33, 70, 0.9);
+  --console-demo-badge-shadow: 0 6px 16px rgba(13, 33, 70, 0.26);
+
+  --console-rightpanel-top: #0f2f63;
+  --console-rightpanel-bottom: #0b2349;
+
+  --console-alert-bg: rgba(255, 255, 255, 0.08);
+  --console-alert-border: rgba(255, 255, 255, 0.35);
+  --console-alert-line: #f5f7ff;
+  --console-alert-sub: rgba(233, 238, 255, 0.9);
+  --console-header-bg: linear-gradient(180deg, #133b74 0%, #0b2d5f 100%);
+  --console-header-border: rgba(255, 255, 255, 0.35);
+  --console-header-shadow: 0 22px 35px rgba(13, 33, 70, 0.35);
+  --console-rightpanel-text: #f5f7ff;
+  --console-bell-color: #f5f7ff;
+  --console-header-title: #f5f7ff;
+}
+
+@media (prefers-color-scheme: light) {
+  :global(:root:not([data-theme])) .page {
+    --console-bg: #dfe3ec;
+    --console-bell-top: #0f2f63;
+    --console-bell-bottom: #0b2349;
+    --console-bell-border: rgba(255, 255, 255, 0.4);
+
+    --console-card-top: #ffffff;
+    --console-card-bottom: #f3f5fa;
+    --console-border-weak: rgba(13, 33, 70, 0.25);
+    --console-border-strong: rgba(13, 33, 70, 0.35);
+
+    --console-select-bg: #ffffff;
+    --console-select-text: #0d2550;
+    --console-select-border: rgba(13, 33, 70, 0.3);
+    --console-select-focus-border: rgba(13, 33, 70, 0.6);
+    --console-select-focus-shadow: 0 0 0 3px rgba(17, 52, 109, 0.22);
+    --console-select-chevron: #0d2550;
+
+    --console-kpi-title: rgba(13, 37, 80, 0.75);
+
+    --console-mapcard-top: #ffffff;
+    --console-mapcard-bottom: #ecf0f8;
+    --console-map-grid-strong: rgba(13, 33, 70, 0.12);
+    --console-map-grid-faint: rgba(13, 33, 70, 0.06);
+    --console-map-bg: #f7f9fe;
+
+    --console-demo-pin-shadow: 0 10px 16px rgba(13, 33, 70, 0.2);
+    --console-demo-badge-bg: rgba(13, 33, 70, 0.9);
+    --console-demo-badge-shadow: 0 6px 16px rgba(13, 33, 70, 0.26);
+
+    --console-rightpanel-top: #0f2f63;
+    --console-rightpanel-bottom: #0b2349;
+
+    --console-alert-bg: rgba(255, 255, 255, 0.08);
+    --console-alert-border: rgba(255, 255, 255, 0.35);
+    --console-alert-line: #f5f7ff;
+    --console-alert-sub: rgba(233, 238, 255, 0.9);
+    --console-header-bg: linear-gradient(180deg, #133b74 0%, #0b2d5f 100%);
+    --console-header-border: rgba(255, 255, 255, 0.35);
+    --console-header-shadow: 0 22px 35px rgba(13, 33, 70, 0.35);
+    --console-rightpanel-text: #f5f7ff;
+    --console-bell-color: #f5f7ff;
+    --console-header-title: #f5f7ff;
+  }
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+  padding: 18px 22px;
+  background: var(--console-header-bg);
+  border: 1px solid var(--console-header-border);
+  border-radius: var(--console-radius-lg);
+  box-shadow: var(--console-header-shadow);
+}
+
+.title {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--console-header-title);
+}
+
+.bellBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  color: var(--console-bell-color);
+  background: linear-gradient(180deg, var(--console-bell-top), var(--console-bell-bottom));
+  border: 1px solid var(--console-bell-border);
+  box-shadow: var(--console-shadow);
+  cursor: pointer;
+}
+
+/* 三栏 */
+.columns {
+  display: grid;
+  grid-template-columns: 300px 1fr 340px;
+  gap: 24px;
+}
+
+@media (max-width: 1200px) {
+  .columns {
+    grid-template-columns: 280px 1fr;
+  }
+  .rightCol {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 820px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+  .leftCol, .rightCol {
+    order: 0;
+  }
+}
+
+/* 左侧卡片区 */
+.leftCol {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.card {
+  background: linear-gradient(180deg, var(--console-card-top), var(--console-card-bottom));
+  border: 1px solid var(--console-border-weak);
+  border-radius: var(--console-radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--console-shadow);
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  color: var(--console-muted);
+  margin-bottom: 8px;
+}
+
+.selectWrap {
+  position: relative;
+}
+
+.select {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  padding: 14px 42px 14px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--console-select-text);
+  background: var(--console-select-bg);
+  border: 1px solid var(--console-select-border);
+  border-radius: 14px;
+  outline: none;
+}
+
+.select:focus {
+  border-color: var(--console-select-focus-border);
+  box-shadow: var(--console-select-focus-shadow);
+}
+
+.selectChevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-52%);
+  pointer-events: none;
+  font-size: 18px;
+  color: var(--console-select-chevron);
+}
+
+.kpiTitle {
+  color: var(--console-kpi-title);
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+.kpiValue {
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.kpiValueSmall {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* 中间地图卡片 */
+.mapSection {
+  width: 100%;
+}
+
+.mapCard {
+  background: linear-gradient(180deg, var(--console-mapcard-top), var(--console-mapcard-bottom));
+  border: 1px solid var(--console-border-weak);
+  border-radius: 26px;
+  padding: 10px;
+  box-shadow: var(--console-shadow);
+}
+
+.mapSurface {
+  position: relative;
+  height: 560px; /* 你可以按需要调整 */
+  border-radius: 20px;
+  background:
+    /* 模拟“网格路网”的低对比度线条 */
+    linear-gradient(90deg, var(--console-map-grid-strong) 1px, transparent 1px),
+    linear-gradient(var(--console-map-grid-strong) 1px, transparent 1px),
+    linear-gradient(90deg, var(--console-map-grid-faint) 1px, transparent 1px),
+    linear-gradient(var(--console-map-grid-faint) 1px, transparent 1px),
+    var(--console-map-bg);
+  background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+  background-position: 0 0, 0 0, 0 0, 0 0;
+  overflow: hidden;
+}
+
+/* 可选：用于“纯前端示意”的多边形与标注（默认注释掉） */
+.demoPolygon {
+  position: absolute;
+  left: 70px;
+  top: 120px;
+  width: 360px;
+  height: 280px;
+  border: 4px solid var(--console-demo-border);
+  border-radius: 8px;
+  background: var(--console-demo-fill);
+  transform: rotate(12deg);
+}
+
+.demoPin {
+  position: absolute;
+  left: 230px;
+  top: 220px;
+  transform: translate(-50%, -100%);
+  background: var(--console-demo-pin-bg);
+  color: var(--console-demo-pin-color);
+  font-weight: 800;
+  padding: 6px 10px;
+  border-radius: 999px;
+  box-shadow: var(--console-demo-pin-shadow);
+}
+
+.demoBadge {
+  position: absolute;
+  background: var(--console-demo-badge-bg);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 18px;
+  font-size: 13px;
+  box-shadow: var(--console-demo-badge-shadow);
+}
+
+/* 右侧告警栏 */
+.rightCol {
+  display: grid;
+  align-content: start;
+}
+
+.rightPanel {
+  background: linear-gradient(180deg, var(--console-rightpanel-top), var(--console-rightpanel-bottom));
+  border: 1px solid var(--console-border-weak);
+  border-radius: var(--console-radius-lg);
+  padding: 18px 18px 22px;
+  box-shadow: var(--console-shadow);
+  min-height: 560px;
+  color: var(--console-rightpanel-text);
+}
+
+.rightTitle {
+  font-weight: 800;
+  font-size: 18px;
+  margin-bottom: 14px;
+}
+
+.alertList {
+  display: grid;
+  gap: 16px;
+}
+
+.alertCard {
+  background: var(--console-alert-bg);
+  border-radius: 16px;
+  border: 1px solid var(--console-alert-border);
+  padding: 18px;
+  box-shadow: var(--console-shadow);
+}
+
+.alertLine {
+  color: var(--console-alert-line);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.alertSub {
+  color: var(--console-alert-sub);
+  font-size: 14px;
+}
+
+/* 右下角状态操作面板 */
+.statusPanel {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  gap: 8px;
+  background: var(--console-demo-badge-bg);
+  padding: 8px;
+  border-radius: 16px;
+  box-shadow: var(--console-demo-badge-shadow);
+  color: #fff;
+}
+
+.statusItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* .statusItem:hover { background-color: rgba(255, 255, 255, 0.15); } */
