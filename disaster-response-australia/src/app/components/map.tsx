@@ -217,7 +217,7 @@ export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdv
         if (cancelled || !mapDivRef.current) return;
 
         const mapOptions: google.maps.MapOptions = {
-          center: { lat: 48.862, lng: 2.342 },
+          center: { lat: -25.2744, lng: 133.7751 },
           zoom: 12,
           mapId: 'c306b3c6dd3ed8d9',
           mapTypeId: 'roadmap',
