@@ -3,40 +3,43 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { auth } from "../firebase/client";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 interface LoginModalProps {
   onClose: () => void;
 }
 
-// 临时路由表：在接入真实鉴权前，用它来演示不同的页面跳转。
-// TODO(auth): 等后端登录流程完成后，改为真实的接口校验逻辑。
-const DEMO_CREDENTIAL_ROUTES: Record<string, { password: string; redirect: string }> = {
-  "console@example.com": { password: "console123", redirect: "/console" },
-  "management@example.com": { password: "manage123", redirect: "/management" },
+// 登录成功后根据邮箱域或后续服务端返回决定跳转路径；先做简单示例
+const resolveRedirect = (email: string) => {
+  if (email.startsWith("console")) return "/console";
+  if (email.startsWith("management")) return "/management";
+  return "/";
 };
 
 export default function LoginModal({ onClose }: LoginModalProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
     const formData = new FormData(e.currentTarget);
     const email = String(formData.get("email") ?? "").toLowerCase().trim();
     const password = String(formData.get("password") ?? "");
 
-    const match = DEMO_CREDENTIAL_ROUTES[email];
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      const idToken = await cred.user.getIdToken();
 
-    if (match && password === match.password) {
-      // TODO(auth): 这里未来替换成真实鉴权成功后的处理逻辑。
-      setError(null);
+      // 写入 Cookie（前端可读）。若需 HttpOnly/安全校验，请改为 Server Action/Route 设置。
+      document.cookie = `drau_id_token=${idToken}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+
       onClose();
-      router.push(match.redirect);
-      return;
+      router.push(resolveRedirect(email));
+    } catch (err: unknown) {
+      setError("登录失败，请检查邮箱或密码。");
     }
-
-    // 保持弹窗开启，同时提醒未来的我们删除这段临时代码。
-    setError("Demo credentials only: use console@example.com or management@example.com.");
   };
 
   return (

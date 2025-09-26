@@ -47,7 +47,20 @@ export default function DashboardPage() {
             </div>
           </div>
           {/* Right side: Actions */}
-          <div className="flex items-center gap-3">
+          { document.cookie.includes("drau_id_token") ? (
+            <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                document.cookie = "drau_id_token=; path=/; max-age=0";
+                window.location.reload();
+              }}
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur hover:bg-white/15"
+            >
+              Sign Out
+            </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
             <button
               onClick={() => setLoginModalOpen(true)}
               className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur hover:bg-white/15"
@@ -55,6 +68,7 @@ export default function DashboardPage() {
               Sign In / Sign Up
             </button>
           </div>
+          )}
         </div>
       </header>
 
