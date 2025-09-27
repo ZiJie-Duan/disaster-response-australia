@@ -8,6 +8,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 
 interface LoginModalProps {
   onClose: () => void;
+  setIsLogIn: (isLogIn: boolean) => void;
 }
 
 // 登录成功后根据邮箱域或后续服务端返回决定跳转路径；先做简单示例
@@ -17,7 +18,7 @@ const resolveRedirect = (email: string) => {
   return "/";
 };
 
-export default function LoginModal({ onClose }: LoginModalProps) {
+export default function LoginModal({ onClose, setIsLogIn }: LoginModalProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -36,8 +37,11 @@ export default function LoginModal({ onClose }: LoginModalProps) {
       document.cookie = `drau_id_token=${idToken}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
 
       onClose();
+      setIsLogIn(true);
       router.push(resolveRedirect(email));
     } catch (err: unknown) {
+      setIsLogIn(false);
+      document.cookie = "drau_id_token=; path=/; max-age=0";
       setError("登录失败，请检查邮箱或密码。");
     }
   };

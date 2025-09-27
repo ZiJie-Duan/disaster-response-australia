@@ -5,6 +5,7 @@ import Image from "next/image";
 import { AlertTriangle, CheckCircle2, Search, Maximize2 } from "lucide-react";
 import LoginModal from "./components/LoginModal";
 import Map from "./components/map";
+import { useEffect } from "react";
 
 // /**
 //  * Placeholder implementation for a single-file Next.js (App Router) page.
@@ -18,20 +19,47 @@ import Map from "./components/map";
 //  * 3) Connect data: Replace the `DATA` object with your API responses or Server Actions.
 //  */
 
-// ====== Placeholder data (all replaceable) ======
-const DATA = {
-  activeAreaName: "", // e.g., "Whitehorse"
-  resolvedAreas: "", // e.g., 2
-  affectedPopulation: "", // e.g., 4513
-  survivorsWithGps: "", // e.g., 42
-  latestReleases: [] as { title: string; href?: string }[],
-};
 
 // A small utility to display empty values as "—"
 const asPlaceholder = (v: React.ReactNode) => (v === undefined || v === null || v === "" ? "—" : v);
 
 export default function DashboardPage() {
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
+  const [isLogIn, setIsLogIn] = useState(false);
+  const [data, setData] = useState({
+    activeAreaName: "",
+    resolvedAreas: "",
+    affectedPopulation: "",
+    survivorsWithGps: "",
+    latestReleases: [] as { title: string; href?: string }[],
+  });
+
+  useEffect(() => {
+    if (document && document.cookie.includes("drau_id_token")) {
+      // maybe in the future, change to Context to store the token
+      // TODO: Verify the token is valid and is not expired
+      setIsLogIn(true);
+    }
+
+    // TODO: Replace with actual data from the backend, Fetch here
+    const timer = setInterval(() => {
+      setData({
+        activeAreaName: String(Math.floor(Math.random() * 10)),
+        resolvedAreas: String(Math.floor(Math.random() * 8)), 
+        affectedPopulation: String(Math.floor(Math.random() * 1000)),
+        survivorsWithGps: String(Math.floor(Math.random() * 100)),
+        latestReleases: (() => {
+          const releases = [];
+          for (let i = 2; i < Math.floor(Math.random() * 20); i++) {
+            releases.push({ title: `Test Title ${i}`, href: `https://www.google.com` });
+          }
+          return releases;
+        })(),
+      });
+    }, 3000);
+    return () => clearInterval(timer);
+
+  }, []);
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -47,11 +75,12 @@ export default function DashboardPage() {
             </div>
           </div>
           {/* Right side: Actions */}
-          { document.cookie.includes("drau_id_token") ? (
+          { isLogIn ? (
             <div className="flex items-center gap-3">
             <button
               onClick={() => {
                 document.cookie = "drau_id_token=; path=/; max-age=0";
+                setIsLogIn(false);
                 window.location.reload();
               }}
               className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur hover:bg-white/15"
@@ -72,14 +101,14 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {isLoginModalOpen && <LoginModal onClose={() => setLoginModalOpen(false)} />}
+      {isLoginModalOpen && <LoginModal onClose={() => setLoginModalOpen(false)} setIsLogIn={setIsLogIn} />}
 
       {/* Statistic cards */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard title="Active Disaster Areas" value={asPlaceholder(DATA.activeAreaName)} />
-        <StatCard title="Resolved Areas" value={asPlaceholder(DATA.resolvedAreas)} />
-        <StatCard title="Estimated Affected Population" value={asPlaceholder(DATA.affectedPopulation)} />
-        <StatCard title="Survivors Sharing GPS Total" value={asPlaceholder(DATA.survivorsWithGps)} />
+        <StatCard title="Active Disaster Areas" value={data.activeAreaName} />
+        <StatCard title="Resolved Areas" value={data.resolvedAreas} />
+        <StatCard title="Estimated Affected Population" value={data.affectedPopulation} />
+        <StatCard title="Survivors Sharing GPS Total" value={data.survivorsWithGps} />
       </section>
 
       {/* Main layout */}
@@ -88,11 +117,11 @@ export default function DashboardPage() {
         <aside className="rounded-2xl bg-card shadow-sm ring-1 ring-border overflow-hidden">
           <div className="bg-[#0C1E3B] text-white px-4 py-3 text-base font-semibold">Latest Release</div>
           <div className="p-0 divide-y divide-border">
-            {DATA.latestReleases.length === 0 ? (
+            {data.latestReleases.length === 0 ? (
               <EmptyReleaseList />
             ) : (
               <ul className="flex flex-col">
-                {DATA.latestReleases.map((it, idx) => (
+                {data.latestReleases.map((it, idx) => (
                   <li key={idx} className="px-4 py-3 hover:bg-secondary">
                     {it.href ? (
                       <a className="text-sm text-card-foreground underline" href={it.href}>

@@ -128,6 +128,11 @@ export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdv
       }
     };
     reader.readAsText(file);
+    
+    // 重置文件输入值，允许重复选择同一文件
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   // Delete selected feature

@@ -61,6 +61,8 @@ export default function DisasterAreaManagementPage() {
   // ====== Map container: Leave empty, will integrate with Map SDK in the future ======
   const mapRef = useRef<HTMLDivElement | null>(null);
 
+  const [editMode, setEditMode] = useState<boolean>(false);
+
   useEffect(() => {
     // TODO[map]: Initialize the map here, e.g.:
     // const map = new mapboxgl.Map({ container: mapRef.current!, ... });
@@ -148,16 +150,24 @@ export default function DisasterAreaManagementPage() {
         {/* 顶部工具栏 + 用户区 */}
         <div className={styles.topbar}>
           <div className={styles.toolbar}>
-            <ToolbarButton label="Add Point" onClick={handleAddPoint}>
-              <PinIcon />
-            </ToolbarButton>
-            <ToolbarButton label="Add Line" onClick={handleAddLine}>
+
+            {editMode ? (
+              <ToolbarButton label="Save" onClick={() => setEditMode(false)}>
+                <PinIcon />
+              </ToolbarButton>
+            ) : (
+              <ToolbarButton label="Edit" onClick={() => setEditMode(true)}>
+                <PinIcon />
+              </ToolbarButton>
+            )}
+
+            <ToolbarButton label="Something1" onClick={handleAddLine}>
               <SlashIcon />
             </ToolbarButton>
-            <ToolbarButton label="Add Area" onClick={handleAddArea}>
+            <ToolbarButton label="Something2" onClick={handleAddArea}>
               <PlusIcon />
             </ToolbarButton>
-            <ToolbarButton label="Delete" onClick={handleDelete} variant="danger">
+            <ToolbarButton label="Something3" onClick={handleDelete} variant="danger">
               <TrashIcon />
             </ToolbarButton>
           </div>
@@ -175,7 +185,7 @@ export default function DisasterAreaManagementPage() {
 
           {/* 地图容器 */}
           <div ref={mapRef} id="map-container" className={styles.mapSurface} >
-             <Map editable={true} />
+             <Map editable={editMode} />
           </div>
 
           {/* "Verified Device" bubble in the middle (UI placeholder only) */}
