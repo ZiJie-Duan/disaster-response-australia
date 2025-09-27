@@ -11,7 +11,7 @@ interface LoginModalProps {
   setIsLogIn: (isLogIn: boolean) => void;
 }
 
-// 登录成功后根据邮箱域或后续服务端返回决定跳转路径；先做简单示例
+// After successful login, email domain or subsequent service will determine which path will be transmitted into.
 const resolveRedirect = (email: string) => {
   if (email.startsWith("console")) return "/console";
   if (email.startsWith("management")) return "/management";
@@ -33,7 +33,7 @@ export default function LoginModal({ onClose, setIsLogIn }: LoginModalProps) {
       const cred = await signInWithEmailAndPassword(auth, email, password);
       const idToken = await cred.user.getIdToken();
 
-      // 写入 Cookie（前端可读）。若需 HttpOnly/安全校验，请改为 Server Action/Route 设置。
+      // Write into Cookie (front-end readable). If HttpOnly/security verification is required, please change to Server Action/Route settings.
       document.cookie = `drau_id_token=${idToken}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
 
       onClose();
@@ -42,7 +42,7 @@ export default function LoginModal({ onClose, setIsLogIn }: LoginModalProps) {
     } catch (err: unknown) {
       setIsLogIn(false);
       document.cookie = "drau_id_token=; path=/; max-age=0";
-      setError("登录失败，请检查邮箱或密码。");
+      setError("Login failed, please check your email or password.");
     }
   };
 
