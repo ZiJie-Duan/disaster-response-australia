@@ -13,6 +13,7 @@ import {
   TerraDrawFreehandMode
 } from 'terra-draw';
 import { TerraDrawGoogleMapsAdapter } from 'terra-draw-google-maps-adapter';
+import { createTextOverlayClass } from './TextOverlay';
 
 
 const colorPalette = [
@@ -127,6 +128,11 @@ export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdv
       }
     };
     reader.readAsText(file);
+    
+    // 重置文件输入值，允许重复选择同一文件
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   // Delete selected feature
@@ -222,7 +228,7 @@ export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdv
           mapId: 'c306b3c6dd3ed8d9',
           mapTypeId: 'roadmap',
           zoomControl: false,
-          tilt: 45,
+          tilt: 0,
           mapTypeControl: true,
           clickableIcons: false,
           streetViewControl: false,
@@ -231,6 +237,15 @@ export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdv
 
         const map = new Map(mapDivRef.current, mapOptions);
         mapRef.current = map;
+
+        const TextOverlay = createTextOverlayClass(google.maps);
+
+        new TextOverlay(
+          new google.maps.LatLng(48.862, 2.342),
+          "Paris this is a complete text overlay",
+          map
+        );
+
 
         map.addListener("click", () => {
           if (drawRef.current) {
