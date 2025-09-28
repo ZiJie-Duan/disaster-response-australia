@@ -115,8 +115,8 @@ export default function DisasterAreaManagementPage() {
                 style={{ objectFit: 'contain' }}
               />
             </span>
+            <span className={styles.sideTitleLabel}>MANAGEMENT SYSTEM</span>
           </Link>
-          <span className={styles.sideTitleLabel}>MANAGEMENT SYSTEM</span>
         </div>
 
         <button className={styles.createBtn}
