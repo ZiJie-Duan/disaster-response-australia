@@ -93,7 +93,7 @@ export default function DisasterAreaManagementPage({
 
   return (
     <div className={styles.page}>
-      {/* 左侧侧边栏 */}
+      {/* left sidebar */}
       <aside className={styles.sidebar}>
         <div className={styles.sideTitle}>
           <Link href="/" className={styles.logoLink} aria-label="Back to homepage">
@@ -147,9 +147,9 @@ export default function DisasterAreaManagementPage({
         </nav>
       </aside>
 
-      {/* 右侧主区域 */}
+      {/* right main area */}
       <section className={styles.main}>
-        {/* 顶部工具栏 + 用户区 */}
+        {/* top toolbar + user area */}
         <div className={styles.topbar}>
           <div className={styles.toolbar}>
 
@@ -182,10 +182,10 @@ export default function DisasterAreaManagementPage({
           </div>
         </div>
 
-        {/* 地图卡片（空容器） */}
+        {/* map card（empty container） */}
         <div className={styles.mapCard}>
 
-          {/* 地图容器 */}
+          {/* map container */}
           <div ref={mapRef} id="map-container" className={styles.mapSurface} >
              <Map editable={editMode} />
           </div>

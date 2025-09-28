@@ -21,7 +21,7 @@ type ConsoleData = {
   stats: ConsoleStats;
 };
 
-// TODO: 等后端接口准备好后，使用真实返回数据替换占位值。
+// TODO: when the backend API is served, placeholder values would be replaced with real data.
 const EMPTY_CONSOLE_DATA: ConsoleData = {
   zones: [],
   alerts: [],
@@ -41,18 +41,18 @@ export default function RescuerConsolePage({
   const [selectedZone, setSelectedZone] = useState(() => consoleData.zones[0] ?? '');
 
   const zones = consoleData.zones;
-  // 地理围栏告警来自后端数据，未来会直接渲染为右侧卡片。
+  // Geofence alerts come from backend data, it will be rendered as cards on the right in the future.
   const alerts = consoleData.alerts;
   const hasZones = zones.length > 0;
   const stats = consoleData.stats;
 
   return (
     <main className={styles.page}>
-      {/* 顶部标题 + 铃铛 */}
+      {/* Top title + bell */}
       <header className={styles.header}>
         <h1 className={styles.title}>Rescuer Console</h1>
         <button className={styles.bellBtn} aria-label="Notifications">
-          {/* 简单的内联 SVG 铃铛，避免装依赖 */}
+          {/* Simple inline SVG bell to avoid installing dependencies */}
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M12 3a6 6 0 00-6 6v3.586l-1.293 1.293A1 1 0 005 16h14a1 1 0 00.707-1.707L18.414 12.586V9a6 6 0 00-6-6z" fill="currentColor"/>
             <path d="M9.5 18a2.5 2.5 0 005 0h-5z" fill="currentColor"/>
@@ -60,9 +60,9 @@ export default function RescuerConsolePage({
         </button>
       </header>
 
-      {/* 三栏布局：左统计栏 / 中间地图占位 / 右侧告警栏 */}
+      {/* Three-column layout: left statistics column / middle map placeholder / right alert column */}
       <div className={styles.columns}>
-        {/* 左侧 */}
+        {/* Left side */}
         <aside className={styles.leftCol}>
           <div className={styles.card}>
             <label className={styles.label}>Area Zone</label>
@@ -94,12 +94,12 @@ export default function RescuerConsolePage({
           </div>
         </aside>
 
-        {/* 中间：地图占位（后续把 Map SDK 嵌进去） */}
+        {/* Middle: Map placeholder (embed Map SDK later) */}
         <section className={styles.mapSection}>
           <div className={styles.mapCard}>
             <div className={styles.mapSurface} id="map-container" data-testid="map-placeholder">
-              {/* 这里是空容器：将来把地图实例 mount 到 #map-container 即可 */}
-              {/* 你也可以把下面这段“临时多边形/标注”解除注释，作为纯前端示意层 */}
+              {/* This is an empty container: change the map instance from  mount  to #map-container in the future */}
+              {/* You can also uncomment the following "temporary polygon/marker" as a pure front-end schematic layer */}
               {/*
               <div className={styles.demoPolygon} />
               <div className={styles.demoPin}>SOS</div>
@@ -112,11 +112,11 @@ export default function RescuerConsolePage({
           </div>
         </section>
 
-        {/* 右侧：地理围栏告警 */}
+        {/* Right: Geofence Alerts */}
         <aside className={styles.rightCol}>
           <div className={styles.rightPanel}>
             <div className={styles.rightTitle}>Geofence Alerts</div>
-            {/* 有真实告警数据时显示列表，否则保留占位文案 */}
+            {/* Showing the list when there is real alert data, otherwise keep the placeholder text */}
             {alerts.length === 0 ? (
               <EmptyAlertState />
             ) : (
@@ -136,7 +136,7 @@ export default function RescuerConsolePage({
   );
 }
 
-/** 左侧 KPI 卡片 */
+/** Left KPI Card */
 function MetricCard({ title, value }: { title: string; value: ReactNode }) {
   return (
     <div className={styles.card}>
@@ -180,7 +180,7 @@ function StatusActionPanel() {
   );
 }
 
-/* 简单的内联SVG图标，避免装依赖 */
+/* Simple inline SVG icons to avoid installing dependencies */
 function SafeIcon() {
   return (
     <svg width="32" height="32" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2">
