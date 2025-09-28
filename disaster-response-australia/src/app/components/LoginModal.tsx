@@ -42,7 +42,7 @@ export default function LoginModal({ onClose, setIsLogIn }: LoginModalProps) {
     } catch (err: unknown) {
       setIsLogIn(false);
       document.cookie = "drau_id_token=; path=/; max-age=0";
-      setError("登录失败，请检查邮箱或密码。");
+      setError("Login failed. Please check your email or password.");
     }
   };
 

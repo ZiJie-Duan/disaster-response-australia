@@ -44,11 +44,13 @@ const EMPTY_MANAGEMENT_DATA: ManagementData = {
   verifiedDevices: [],
 };
 
-export default function DisasterAreaManagementPage() {
+export default function DisasterAreaManagementPage({
+  initialData = EMPTY_MANAGEMENT_DATA,
+}: { initialData?: ManagementData } = {}) {
   // ====== Data placeholder: Replace EMPTY_MANAGEMENT_DATA with data from the API once the backend is ready ======
   // e.g.: const [managementData, setManagementData] = useState(EMPTY_MANAGEMENT_DATA);
   //       useEffect(() => { fetch('/api/management').then(res => res.json()).then(setManagementData); }, []);
-  const managementData = EMPTY_MANAGEMENT_DATA; // Using placeholder data for frontend development.
+  const managementData = initialData; // Using placeholder data for frontend development.
 
   const [selectedAreaId, setSelectedAreaId] = useState<string>(
     () => managementData.areas[0]?.id ?? ""
