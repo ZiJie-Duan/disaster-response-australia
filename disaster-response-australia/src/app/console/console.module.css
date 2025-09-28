@@ -179,7 +179,7 @@
   cursor: pointer;
 }
 
-/* 三栏 */
+/* Three columns */
 .columns {
   display: grid;
   grid-template-columns: 300px 1fr 340px;
@@ -204,7 +204,7 @@
   }
 }
 
-/* 左侧卡片区 */
+/* Left card area */
 .leftCol {
   display: grid;
   gap: 18px;
@@ -276,7 +276,7 @@
   font-weight: 700;
 }
 
-/* 中间地图卡片 */
+/* Middle map card */
 .mapSection {
   width: 100%;
 }
@@ -291,10 +291,10 @@
 
 .mapSurface {
   position: relative;
-  height: 560px; /* 你可以按需要调整 */
+  height: 560px; /* You can adjust when needed */
   border-radius: 20px;
   background:
-    /* 模拟“网格路网”的低对比度线条 */
+    /* Simulate low-contrast lines of "grid road network" */
     linear-gradient(90deg, var(--console-map-grid-strong) 1px, transparent 1px),
     linear-gradient(var(--console-map-grid-strong) 1px, transparent 1px),
     linear-gradient(90deg, var(--console-map-grid-faint) 1px, transparent 1px),
@@ -305,7 +305,7 @@
   overflow: hidden;
 }
 
-/* 可选：用于“纯前端示意”的多边形与标注（默认注释掉） */
+/* Optional: Polygon and annotation used for "pure front-end signal" (commented out by default) */
 .demoPolygon {
   position: absolute;
   left: 70px;
@@ -341,7 +341,7 @@
   box-shadow: var(--console-demo-badge-shadow);
 }
 
-/* 右侧告警栏 */
+/* Right alert bar */
 .rightCol {
   display: grid;
   align-content: start;
@@ -387,7 +387,7 @@
   font-size: 14px;
 }
 
-/* 右下角状态操作面板 */
+/* Status operation panel in the lower right corner */
 .statusPanel {
   position: absolute;
   right: 16px;
