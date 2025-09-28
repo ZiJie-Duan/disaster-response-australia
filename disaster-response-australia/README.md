@@ -1,3 +1,23 @@
+Repository
+This project’s government-side platform is designed to provide rapid disaster response information and data visualization. The frontend focuses on two main roles: commanders and responders. Commanders can interactively define and mark regional privacy waivers, responders can retrieve detailed information about specific areas—for example, viewing panels with data on regions and population counts, as well as accessing map-based visualizations of facilities and routing within selected areas.
+To implement these features, the frontend is built on Next.js and React, chosen for their flexibility in rendering dynamic content. TypeScript and Tailwind CSS are used for component development, interaction logic, and styling. For authentication, Firebase is integrated to handle user login and verification via backend services. For mapping, the Google Maps API is embedded into the workspace to support advanced drawing and visualization functions. These drawing features are enabled through the Terra-Draw open-source library, connected via an adapter to integrate seamlessly with Google Maps.
+  Installation & Setup
+    To set up and run the project, first install dependencies by navigating to the root directory and running pnpm install, as pnpm is used as the package manager for faster and more efficient builds. Next, create a .env.local file in the root directory and add your Google Maps API key by setting NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here. Once the environment is configured, start the development server with pnpm dev and follow the terminal output to open the application at the indicated local address.
+
+
+Branching / Commit Conventions
+We follow the GitHub Flow workflow for version control, where the main branch is always kept in a deployable state and direct pushes are prohibited, with all development work carried out in dedicated branches. 
+Branch names are structured by purpose: 
+    new features use feature/<feature-name>, 
+    bug fixes use fix/<issue-description>, 
+    build or dependency updates use chore/, 
+    and changes to documentation or tests use docs/ and test/ respectively. 
+
+All commits follow the Conventional Commits specification in the format <type>(<scope>): <subject>, for example feat(auth): add email login support or fix(map): resolve marker clustering bug, ensuring a consistent and traceable history. Pull Requests must address a single feature or issue, with titles aligned to the commit convention and descriptions that explain the purpose, key changes, and evidence of testing. Before merging, every PR is required to pass linting, type checking, and unit tests, and must be approved by at least one teammate reviewer, thereby maintaining both discipline and quality throughout the development process.
+
+
+
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
