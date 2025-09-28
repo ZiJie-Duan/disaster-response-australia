@@ -59,19 +59,19 @@
 
 :global(:root[data-theme="light"]) .page {
   /* Page & text */
-  --mgmt-bg: #F2F4F7;              /* 页面淡灰 */
-  --mgmt-text: #0B0C0C;            /* 正文深灰黑 */
-  --mgmt-muted: #495057;           /* 次要文字 */
-  --mgmt-accent: #1E67A9;          /* 链接/强调蓝 */
-  --mgmt-primary-btn: #1E67A9;     /* 主要按钮蓝 */
+  --mgmt-bg: #F2F4F7;              /* Page light gray */
+  --mgmt-text: #0B0C0C;            /* Body dark gray-black */
+  --mgmt-muted: #495057;           /* Secondary text */
+  --mgmt-accent: #1E67A9;          /* Link/emphasis blue */
+  --mgmt-primary-btn: #1E67A9;     /* Primary button blue */
   --mgmt-shadow: 0 12px 24px rgba(11, 59, 112, 0.18);
 
-  /* Top bar (深海军蓝) */
+  /* Top bar (dark navy blue) */
   --mgmt-topbar-bg: linear-gradient(180deg, #0C3A74 0%, #0A356A 100%);
   --mgmt-topbar-border: rgba(255, 255, 255, 0.35);
   --mgmt-topbar-shadow: 0 14px 28px rgba(11, 59, 112, 0.25);
 
-  /* Left sidebar → 白卡片风格 */
+  /* Left sidebar -> white card style */
   --mgmt-sidebar-top: #FFFFFF;
   --mgmt-sidebar-bottom: #FFFFFF;
   --mgmt-sidebar-border: #DEE3EA;
@@ -81,7 +81,7 @@
   --mgmt-area-active-bg: #FFFFFF;
   --mgmt-area-active-border: #DEE3EA;
 
-  /* Toolbar buttons（顶栏内按钮：透明底、白描边、白字） */
+  /* Toolbar buttons (buttons in the top bar: transparent background, white stroke, white text) */
   --mgmt-toolbar-bg: rgba(255, 255, 255, 0.08);
   --mgmt-toolbar-border: rgba(255, 255, 255, 0.62);
   --mgmt-toolbar-color: #FFFFFF;
@@ -90,19 +90,19 @@
   --mgmt-bell-color: #FFFFFF;
   --mgmt-user-name: #FFFFFF;
 
-  /* Map card & grid（白卡片 + 灰色网格） */
+  /* Map card & grid (white card + gray grid) */
   --mgmt-map-card-bg: #FFFFFF;
   --mgmt-map-card-border: #DEE3EA;
-  --mgmt-map-surface-major: rgba(199, 205, 213, 0.9);   /* 粗网格线 */
-  --mgmt-map-surface-minor: rgba(199, 205, 213, 0.45);  /* 细网格线 */
+  --mgmt-map-surface-major: rgba(199, 205, 213, 0.9);   /* Thick grid lines */
+  --mgmt-map-surface-minor: rgba(199, 205, 213, 0.45);  /* Thin grid lines */
   --mgmt-map-surface-base: #FFFFFF;
   --mgmt-map-surface-border: #C7CDD5;
 
-  /* 中部设备气泡（蓝底白字） */
+  /* Middle device bubble (blue background, white text) */
   --mgmt-device-bubble-bg: #2C5896;
   --mgmt-device-bubble-color: #FFFFFF;
 
-  /* 右下停靠面板（白卡片） */
+  /* Lower right dock panel (white card) */
   --mgmt-dock-panel-bg: #FFFFFF;
   --mgmt-dock-panel-color: #0B0C0C;
   --mgmt-dock-panel-border: #DEE3EA;
@@ -110,7 +110,7 @@
   --mgmt-empty-device-color: rgba(11, 12, 16, 0.60);
   --mgmt-legend-dot-border: #D0D6DF;
 
-  /* 底部详情条（深海军蓝） */
+  /* Bottom detail bar (dark navy blue) */
   --mgmt-detailbar-bg: #0B3B70;
   --mgmt-detailbar-border: rgba(255, 255, 255, 0.30);
   --mgmt-detail-label: rgba(255, 255, 255, 0.85);
@@ -119,19 +119,19 @@
 @media (prefers-color-scheme: light) {
   :global(:root:not([data-theme])) .page {
     /* Page & text */
-    --mgmt-bg: #F2F4F7;              /* 页面淡灰 */
-    --mgmt-text: #0B0C0C;            /* 正文深灰黑 */
-    --mgmt-muted: #495057;           /* 次要文字 */
-    --mgmt-accent: #1E67A9;          /* 链接/强调蓝 */
-    --mgmt-primary-btn: #1E67A9;     /* 主要按钮蓝 */
+    --mgmt-bg: #F2F4F7;              /* Page light gray */
+    --mgmt-text: #0B0C0C;            /* Body dark gray-black */
+    --mgmt-muted: #495057;           /* Secondary text */
+    --mgmt-accent: #1E67A9;          /* Link/emphasis blue */
+    --mgmt-primary-btn: #1E67A9;     /* Primary button blue */
     --mgmt-shadow: 0 12px 24px rgba(11, 59, 112, 0.18);
 
-    /* Top bar (深海军蓝) */
+    /* Top bar (dark navy blue) */
     --mgmt-topbar-bg: linear-gradient(180deg, #0C3A74 0%, #0A356A 100%);
     --mgmt-topbar-border: rgba(255, 255, 255, 0.35);
     --mgmt-topbar-shadow: 0 14px 28px rgba(11, 59, 112, 0.25);
 
-    /* Left sidebar → 白卡片风格 */
+    /* Left sidebar -> white card style */
     --mgmt-sidebar-top: #FFFFFF;
     --mgmt-sidebar-bottom: #FFFFFF;
     --mgmt-sidebar-border: #DEE3EA;
@@ -141,7 +141,7 @@
     --mgmt-area-active-bg: #FFFFFF;
     --mgmt-area-active-border: #DEE3EA;
 
-    /* Toolbar buttons（顶栏内按钮：透明底、白描边、白字） */
+    /* Toolbar buttons (buttons in the top bar: transparent background, white stroke, white text) */
     --mgmt-toolbar-bg: rgba(255, 255, 255, 0.08);
     --mgmt-toolbar-border: rgba(255, 255, 255, 0.62);
     --mgmt-toolbar-color: #FFFFFF;
@@ -150,19 +150,19 @@
     --mgmt-bell-color: #FFFFFF;
     --mgmt-user-name: #FFFFFF;
 
-    /* Map card & grid（白卡片 + 灰色网格） */
+    /* Map card & grid (white card + gray grid) */
     --mgmt-map-card-bg: #FFFFFF;
     --mgmt-map-card-border: #DEE3EA;
-    --mgmt-map-surface-major: rgba(199, 205, 213, 0.9);   /* 粗网格线 */
-    --mgmt-map-surface-minor: rgba(199, 205, 213, 0.45);  /* 细网格线 */
+    --mgmt-map-surface-major: rgba(199, 205, 213, 0.9);   /* Thick grid lines */
+    --mgmt-map-surface-minor: rgba(199, 205, 213, 0.45);  /* Thin grid lines */
     --mgmt-map-surface-base: #FFFFFF;
     --mgmt-map-surface-border: #C7CDD5;
 
-    /* 中部设备气泡（蓝底白字） */
+    /* Middle device bubble (blue background, white text) */
     --mgmt-device-bubble-bg: #2C5896;
     --mgmt-device-bubble-color: #FFFFFF;
 
-    /* 右下停靠面板（白卡片） */
+    /* Lower right dock panel (white card) */
     --mgmt-dock-panel-bg: #FFFFFF;
     --mgmt-dock-panel-color: #0B0C0C;
     --mgmt-dock-panel-border: #DEE3EA;
@@ -170,14 +170,14 @@
     --mgmt-empty-device-color: rgba(11, 12, 16, 0.60);
     --mgmt-legend-dot-border: #D0D6DF;
 
-    /* 底部详情条（深海军蓝） */
+    /* Bottom detail bar (dark navy blue) */
     --mgmt-detailbar-bg: #0B3B70;
     --mgmt-detailbar-border: rgba(255, 255, 255, 0.30);
     --mgmt-detail-label: rgba(255, 255, 255, 0.85);
   }
 }
 
-/* 左侧栏 */
+/* Left sidebar */
 .sidebar {
   background: linear-gradient(180deg, var(--mgmt-sidebar-top), var(--mgmt-sidebar-bottom));
   border-right: 1px solid var(--mgmt-sidebar-border);
@@ -308,10 +308,10 @@
 .areaName { font-weight: 700; }
 .areaStatus { color: var(--mgmt-muted); font-size: 13px; margin-top: 2px; }
 
-/* 右侧主区域 */
+/* Right main area */
 .main { padding: 22px 22px 28px; }
 
-/* 顶部 */
+/* Top */
 .topbar {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -373,7 +373,7 @@
 }
 .userName { color: var(--mgmt-user-name); }
 
-/* 地图卡片 */
+/* Map card */
 .mapCard {
   position: relative;
   background: var(--mgmt-map-card-bg);
@@ -398,7 +398,7 @@
   overflow: hidden;
 }
 
-/* 中部设备气泡（位置固定，仅占位） */
+/* Middle device bubble (fixed position, placeholder only) */
 .deviceBubble {
   position: absolute;
   left: 44%;
@@ -416,7 +416,7 @@
 }
 .deviceBubbleLine { opacity: 0.95; }
 
-/* 右下角白色停靠面板 */
+/* White dock panel in the lower right corner */
 .dockPanel {
   position: absolute;
   right: 18px;
@@ -454,7 +454,7 @@
   border: 1px solid var(--mgmt-legend-dot-border);
 }
 
-/* 底部详情条 */
+/* Bottom detail bar */
 .detailBar {
   margin-top: 16px;
   background: var(--mgmt-detailbar-bg);

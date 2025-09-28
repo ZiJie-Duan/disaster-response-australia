@@ -129,7 +129,7 @@ export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdv
     };
     reader.readAsText(file);
     
-    // 重置文件输入值，允许重复选择同一文件
+    // reset the input value of the file, allowing to choose repetitively same file
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
