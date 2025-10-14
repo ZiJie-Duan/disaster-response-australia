@@ -60,10 +60,12 @@ function processSnapshotForUndo(snapshot: any[]): any[] {
 type ModeId = 'select' | 'point' | 'linestring' | 'polygon' | 'rectangle' | 'circle' | 'freehand' | 'static' | 'freeze';
 
 interface TerraDrawAdvancedPageProps {
-  editable: boolean,
+  editable: boolean
+  getFeatures: () => any[]
+  setFeatures: (features: any[]) => void
 };
 
-export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdvancedPageProps ) {
+export default function TerraDrawAdvancedPage( { editable = true, getFeatures, setFeatures }: TerraDrawAdvancedPageProps ) {
   const mapDivRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const drawRef = useRef<TerraDraw | null>(null);
@@ -80,6 +82,25 @@ export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdv
   // Mode switching function
   const switchMode = (mode: ModeId) => {
     if (!drawRef.current) return;
+
+    
+
+    // console.log(drawRef.current.getSnapshot());
+    // drawRef.current!.addFeatures([{
+    //   id: crypto.randomUUID(),
+    //   type: "Feature",
+    //   geometry: {
+    //     type: "Point",
+    //     coordinates: [
+    //       133.726881602,
+    //       -25.23472513
+    //     ]
+    //   },
+    //   properties: {
+    //     mode: "point"
+    //   }
+    // }])
+
     
     if (mode === 'static') {
       drawRef.current.clear();
@@ -235,7 +256,7 @@ export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdv
         if (cancelled || !mapDivRef.current) return;
 
         const mapOptions: google.maps.MapOptions = {
-          center: { lat: -25.2744, lng: 133.7751 },
+          center: { lat: -37.8136, lng: 144.9631 },
           zoom: 12,
           mapId: 'c306b3c6dd3ed8d9',
           mapTypeId: 'roadmap',
