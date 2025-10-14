@@ -79,6 +79,14 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3">
             <button
               onClick={() => {
+                window.location.href = "/management";
+              }}
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur hover:bg-white/15"
+            >
+              Management
+            </button>
+            <button
+              onClick={() => {
                 document.cookie = "drau_id_token=; path=/; max-age=0";
                 setIsLogIn(false);
                 window.location.reload();
