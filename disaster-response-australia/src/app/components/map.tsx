@@ -57,7 +57,7 @@ function processSnapshotForUndo(snapshot: any[]): any[] {
     });
 }
 
-type ModeId = 'select' | 'point' | 'linestring' | 'polygon' | 'rectangle' | 'circle' | 'freehand' | 'static';
+type ModeId = 'select' | 'point' | 'linestring' | 'polygon' | 'rectangle' | 'circle' | 'freehand' | 'static' | 'freeze';
 
 interface TerraDrawAdvancedPageProps {
   editable: boolean,
@@ -84,11 +84,23 @@ export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdv
     if (mode === 'static') {
       drawRef.current.clear();
       drawRef.current.setMode('static');
+    } else if (mode === 'freeze') {
+      drawRef.current.setMode('static');
     } else {
       drawRef.current.setMode(mode);
     }
     setActiveMode(mode);
   };
+
+  function autoSwitchMode() {
+    if (!editable) {
+      switchMode('freeze');
+    }
+  };
+
+  useEffect(() => {
+    autoSwitchMode();
+  }, [editable]);
 
   // Export GeoJSON
   const exportGeoJSON = () => {
@@ -378,8 +390,8 @@ export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdv
 
           draw.on('ready', () => {
             console.log("TerraDraw is ready!");
-            draw.setMode('point');
-            setActiveMode('point');
+            draw.setMode('select');
+            setActiveMode('select');
 
             draw.on("select", (id) => {
               if (selectedFeatureIdRef.current && selectedFeatureIdRef.current !== id) {
