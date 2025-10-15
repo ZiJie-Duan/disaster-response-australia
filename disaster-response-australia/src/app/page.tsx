@@ -39,6 +39,7 @@ export default function DashboardPage() {
       // maybe in the future, change to Context to store the token
       // TODO: Verify the token is valid and is not expired
       setIsLogIn(true);
+      console.log("token", document.cookie);
     }
 
     // TODO: Replace with actual data from the backend, Fetch here

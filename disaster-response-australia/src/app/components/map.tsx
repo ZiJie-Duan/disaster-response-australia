@@ -14,6 +14,7 @@ import {
 } from 'terra-draw';
 import { TerraDrawGoogleMapsAdapter } from 'terra-draw-google-maps-adapter';
 import { createTextOverlayClass } from './TextOverlay';
+import { fetchPopulationData, type AreaPolygon, type PopulationDataResponse } from '../services/populationApi';
 
 
 const colorPalette = [
@@ -76,6 +77,7 @@ export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdv
   
   const [activeMode, setActiveMode] = useState<ModeId>('point');
   const [resizingEnabled, setResizingEnabled] = useState<boolean>(false);
+  const [heatmapLayer, setHeatmapLayer] = useState<google.maps.visualization.HeatmapLayer | null>(null);
 
   // Mode switching function
   const switchMode = (mode: ModeId) => {
@@ -191,10 +193,10 @@ export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdv
   // Toggle resize mode
   const toggleResize = () => {
     if (!drawRef.current) return;
-    
+
     const newResizingEnabled = !resizingEnabled;
     setResizingEnabled(newResizingEnabled);
-    
+
     const flags = {
       polygon: { feature: { draggable: true, coordinates: { resizable: newResizingEnabled ? 'center' : undefined, draggable: !newResizingEnabled } } },
       linestring: { feature: { draggable: true, coordinates: { resizable: newResizingEnabled ? 'center' : undefined, draggable: !newResizingEnabled } } },
@@ -202,8 +204,103 @@ export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdv
       circle: { feature: { draggable: true, coordinates: { resizable: newResizingEnabled ? 'center' : undefined, draggable: !newResizingEnabled } } },
       freehand: { feature: { draggable: true, coordinates: { resizable: newResizingEnabled ? 'center' : undefined, draggable: !newResizingEnabled } } },
     };
-    
+
     drawRef.current.updateModeOptions('select', { flags });
+  };
+
+  // Utility: Get map bounds and convert to GeoJSON Polygon
+  const getMapBoundsPolygon = (map: google.maps.Map): AreaPolygon | null => {
+    const bounds = map.getBounds();
+    if (!bounds) return null;
+
+    const ne = bounds.getNorthEast(); // Northeast corner
+    const sw = bounds.getSouthWest(); // Southwest corner
+
+    // Create a rectangle polygon in GeoJSON format (counter-clockwise order)
+    // Format: [longitude, latitude]
+    const coordinates = [[
+      [sw.lng(), sw.lat()], // Southwest
+      [ne.lng(), sw.lat()], // Southeast
+      [ne.lng(), ne.lat()], // Northeast
+      [sw.lng(), ne.lat()], // Northwest
+      [sw.lng(), sw.lat()], // Close the polygon
+    ]];
+
+    return {
+      type: 'Polygon',
+      coordinates,
+    };
+  };
+
+  // Initialize heatmap layer
+  const initializeHeatmap = (map: google.maps.Map) => {
+    if (!google.maps.visualization) {
+      console.error('Google Maps visualization library not loaded');
+      return null;
+    }
+
+    const heatmap = new google.maps.visualization.HeatmapLayer({
+      data: [],
+      map: map,
+      radius: 25,
+      opacity: 0.7,
+    });
+
+    setHeatmapLayer(heatmap);
+    console.log('Heatmap layer initialized');
+    return heatmap;
+  };
+
+  // Update heatmap data
+  const updateHeatmapData = (
+    heatmap: google.maps.visualization.HeatmapLayer,
+    data: PopulationDataResponse
+  ) => {
+    // Convert API data format [lng, lat, weight] to Google Maps format
+    const heatmapData = data.map(([lng, lat, weight]) => ({
+      location: new google.maps.LatLng(lat, lng),
+      weight: weight,
+    }));
+
+    heatmap.setData(heatmapData);
+    console.log(`Heatmap updated with ${heatmapData.length} data points`);
+  };
+
+  // Load heatmap data based on current map bounds
+  const loadHeatmapData = async (map: google.maps.Map) => {
+    try {
+      // Get current map bounds
+      const area = getMapBoundsPolygon(map);
+      if (!area) {
+        console.warn('Could not get map bounds');
+        return;
+      }
+
+      // Prepare API request
+      const now = new Date();
+      const request = {
+        area,
+        time_from: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(), // 24 hours ago
+        time_to: now.toISOString(),
+      };
+
+      console.log('Fetching population data for area:', area);
+
+      // Fetch data from API (currently returns mock data)
+      const data = await fetchPopulationData(request);
+
+      // Initialize heatmap if not already done
+      let currentHeatmap = heatmapLayer;
+      if (!currentHeatmap) {
+        currentHeatmap = initializeHeatmap(map);
+        if (!currentHeatmap) return;
+      }
+
+      // Update heatmap with new data
+      updateHeatmapData(currentHeatmap, data);
+    } catch (error) {
+      console.error('Error loading heatmap data:', error);
+    }
   };
 
   useEffect(() => {
@@ -225,7 +322,7 @@ export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdv
         const loader = new Loader({
           apiKey,
           version: "weekly",
-          libraries: ["maps", "drawing", "marker"]
+          libraries: ["maps", "drawing", "marker", "visualization"]
         });
 
         await loader.load();
@@ -263,6 +360,12 @@ export default function TerraDrawAdvancedPage( { editable = true }: TerraDrawAdv
           if (drawRef.current) {
             console.log("Current draw mode on map click:", drawRef.current.getMode());
           }
+        });
+
+        // Load heatmap data when map becomes idle (finished loading/moving)
+        map.addListener("idle", () => {
+          console.log("Map idle - loading heatmap data");
+          loadHeatmapData(map);
         });
 
         projectionListener = map.addListener("projection_changed", () => {
