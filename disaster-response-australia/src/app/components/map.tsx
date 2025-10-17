@@ -59,14 +59,16 @@ function processSnapshotForUndo(snapshot: any[]): any[] {
 }
 
 type ModeId = 'select' | 'point' | 'linestring' | 'polygon' | 'rectangle' | 'circle' | 'freehand' | 'static' | 'freeze';
+type MapMode = 'original'| 'heatmap';
 
 interface TerraDrawAdvancedPageProps {
   editable: boolean
+  mapMode: MapMode
   getFeatures: () => any[]
   setFeatures: (features: any[]) => void
 };
 
-export default function TerraDrawAdvancedPage( { editable = true, getFeatures, setFeatures }: TerraDrawAdvancedPageProps ) {
+export default function TerraDrawAdvancedPage( { editable = true, mapMode = 'original', getFeatures, setFeatures }: TerraDrawAdvancedPageProps ) {
   const mapDivRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const drawRef = useRef<TerraDraw | null>(null);
@@ -81,11 +83,20 @@ export default function TerraDrawAdvancedPage( { editable = true, getFeatures, s
   const [resizingEnabled, setResizingEnabled] = useState<boolean>(false);
   const [heatmapLayer, setHeatmapLayer] = useState<google.maps.visualization.HeatmapLayer | null>(null);
 
+  function importFeatures(features: any[]) {
+    if (!drawRef.current) return;
+    drawRef.current.clear();
+    drawRef.current.addFeatures(features);
+  }
+
+  function exportFeatures() {
+    if (!drawRef.current) return [];
+    return drawRef.current.getSnapshot();
+  }
+
   // Mode switching function
   const switchMode = (mode: ModeId) => {
     if (!drawRef.current) return;
-
-    
 
     // console.log(drawRef.current.getSnapshot());
     // drawRef.current!.addFeatures([{
@@ -123,6 +134,7 @@ export default function TerraDrawAdvancedPage( { editable = true, getFeatures, s
 
   useEffect(() => {
     autoSwitchMode();
+    importFeatures(getFeatures());
   }, [editable]);
 
   // Export GeoJSON
@@ -285,6 +297,7 @@ export default function TerraDrawAdvancedPage( { editable = true, getFeatures, s
 
     heatmap.setData(heatmapData);
     console.log(`Heatmap updated with ${heatmapData.length} data points`);
+    console.log('Heatmap data size:', heatmap.getData().getLength());
   };
 
   // Load heatmap data based on current map bounds
@@ -385,8 +398,10 @@ export default function TerraDrawAdvancedPage( { editable = true, getFeatures, s
 
         // Load heatmap data when map becomes idle (finished loading/moving)
         map.addListener("idle", () => {
-          console.log("Map idle - loading heatmap data");
-          loadHeatmapData(map);
+          if (mapMode === 'heatmap') {  
+            console.log("Map idle - loading heatmap data");
+            loadHeatmapData(map);
+          }
         });
 
         projectionListener = map.addListener("projection_changed", () => {
@@ -532,6 +547,10 @@ export default function TerraDrawAdvancedPage( { editable = true, getFeatures, s
             historyRef.current.push(processSnapshotForUndo(draw.getSnapshot()));
 
             draw.on("change", (ids, type) => {
+              if (type === 'create') {
+                setFeatures(exportFeatures());
+              }
+              
               if (isRestoringRef.current) {
                 return;
               }

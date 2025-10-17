@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import styles from './management.module.css';
 import Map from '../components/map';
+import { features } from 'process';
 
 type AreaStatus = 'Active Disaster' | 'Resolved' | 'Safe';
 
@@ -64,12 +65,20 @@ export default function DisasterAreaManagementPage({
   const mapRef = useRef<HTMLDivElement | null>(null);
 
   const [editMode, setEditMode] = useState<boolean>(false);
+  const [mapMarkersMemory, setMapMarkersMemory] = useState<any[]>([]);
+  const [tempMapFeatures, setTempMapFeatures] = useState<any[]>([]);
+  const [mapAction, setMapAction] = useState<string>('show'); // 'show' | 'clean_and_edit' 
 
   useEffect(() => {
     // TODO[map]: Initialize the map here, e.g.:
     // const map = new mapboxgl.Map({ container: mapRef.current!, ... });
     // return () => map.remove();
   }, []);
+
+
+  useEffect(() => {
+    console.log('tempMapFeatures', tempMapFeatures);
+  }, [tempMapFeatures]);
 
   // ====== Toolbar actions: Placeholders for now, will be connected to map drawing logic in the future ======
   const handleAddPoint = () => {
@@ -124,6 +133,9 @@ export default function DisasterAreaManagementPage({
         <button className={styles.createBtn}
           onClick={() => {
             // TODO[backend]: Open a creation dialog, and call the backend to create an area upon submission
+            setMapAction('clean_and_edit');
+            setEditMode(true);
+            setTempMapFeatures([]);
           }}
         >
           Create Disaster Area
@@ -149,12 +161,14 @@ export default function DisasterAreaManagementPage({
 
       {/* right main area */}
       <section className={styles.main}>
-        {/* top toolbar + user area */}
-        <div className={styles.topbar}>
-          <div className={styles.toolbar}>
 
+        {mapAction === 'clean_and_edit' && (
+          <div className={styles.topbar}>
             {editMode ? (
-              <ToolbarButton label="Save" onClick={() => setEditMode(false)}>
+              <ToolbarButton label="Save" onClick={() => {
+                setEditMode(false);
+                setMapAction('show');
+              }}>
                 <PinIcon />
               </ToolbarButton>
             ) : (
@@ -162,32 +176,55 @@ export default function DisasterAreaManagementPage({
                 <PinIcon />
               </ToolbarButton>
             )}
-
-            <ToolbarButton label="Something1" onClick={handleAddLine}>
-              <SlashIcon />
-            </ToolbarButton>
-            <ToolbarButton label="Something2" onClick={handleAddArea}>
-              <PlusIcon />
-            </ToolbarButton>
-            <ToolbarButton label="Something3" onClick={handleDelete} variant="danger">
-              <TrashIcon />
-            </ToolbarButton>
           </div>
+        )}
 
-          <div className={styles.userCluster}>
-            <button className={styles.bell}>
-              <BellIcon />
-            </button>
-            <div className={styles.userName}>Admin</div>
+        {mapAction === 'show' && (
+          <div className={styles.topbar}>
+            <div className={styles.toolbar}>
+
+              {editMode ? (
+                <ToolbarButton label="Save" onClick={() => setEditMode(false)}>
+                  <PinIcon />
+                </ToolbarButton>
+              ) : (
+                <ToolbarButton label="Edit" onClick={() => setEditMode(true)}>
+                  <PinIcon />
+                </ToolbarButton>
+              )}
+
+              <ToolbarButton label="Something1" onClick={handleAddLine}>
+                <SlashIcon />
+              </ToolbarButton>
+              <ToolbarButton label="Something2" onClick={handleAddArea}>
+                <PlusIcon />
+              </ToolbarButton>
+              <ToolbarButton label="Something3" onClick={handleDelete} variant="danger">
+                <TrashIcon />
+              </ToolbarButton>
+            </div>
+
+            <div className={styles.userCluster}>
+              <button className={styles.bell}>
+                <BellIcon />
+              </button>
+              <div className={styles.userName}>Admin</div>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* map card（empty container） */}
         <div className={styles.mapCard}>
 
           {/* map container */}
           <div ref={mapRef} id="map-container" className={styles.mapSurface} >
-             <Map editable={editMode} />
+
+            <Map editable={editMode} mapMode="heatmap" getFeatures={
+              () => {(tempMapFeatures); return tempMapFeatures;}
+            } setFeatures={
+              (features) => setTempMapFeatures(features)
+            } />
+
           </div>
 
           {/* "Verified Device" bubble in the middle (UI placeholder only) */}
