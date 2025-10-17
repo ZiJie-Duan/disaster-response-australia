@@ -275,7 +275,7 @@ function MapCard() {
           id="map"
           className="h-full w-full border-2 border-dashed border-border"
         >
-          <Map editable={false} />
+          <Map editable={false} getFeatures={() => []} setFeatures={() => {}} />
         </div>
       </div>
 
