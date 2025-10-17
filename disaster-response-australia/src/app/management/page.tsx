@@ -70,7 +70,31 @@ export default function DisasterAreaManagementPage({
   const [mapAction, setMapAction] = useState<string>('show'); // 'show' | 'clean_and_edit' 
   const [disasterAreaName, setDisasterAreaName] = useState<string>("");
   const [disasterAreaDescription, setDisasterAreaDescription] = useState<string>("");
+  
+  // 通知系统状态
+  const [notification, setNotification] = useState<{
+    show: boolean;
+    type: 'error' | 'success' | 'info';
+    message: string;
+  }>({
+    show: false,
+    type: 'info',
+    message: ''
+  });
 
+  // 显示通知的辅助函数
+  const showNotification = (type: 'error' | 'success' | 'info', message: string) => {
+    setNotification({
+      show: true,
+      type,
+      message
+    });
+    
+    // 3秒后自动隐藏通知
+    setTimeout(() => {
+      setNotification(prev => ({ ...prev, show: false }));
+    }, 3000);
+  };
 
   // Function to get token from cookie
   const getTokenFromCookie = (): string | null => {
@@ -88,6 +112,17 @@ export default function DisasterAreaManagementPage({
 
 
   function createDisasterArea() {
+
+    if (disasterAreaName === "" || disasterAreaDescription === "") {
+      showNotification('error', 'Disaster area name and description are required');
+      return;
+    }
+
+    if (tempMapFeatures.length != 1) {
+      showNotification('error', 'Only one map feature is required to create disaster area');
+      return;
+    }
+
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/disaster_areas`, {
       method: 'POST',
       body: JSON.stringify({
@@ -104,12 +139,25 @@ export default function DisasterAreaManagementPage({
         'Authorization': `Bearer ${getTokenFromCookie()}`,
       },
     })
-    .then(response => response.json())
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    })
     .then(data => {
       console.log('Disaster area created:', data);
+      showNotification('success', 'Disaster area created successfully!');
+      
+      // 清空表单
+      setDisasterAreaName("");
+      setDisasterAreaDescription("");
+      setTempMapFeatures([]);
     })
     .catch(error => {
       console.error('Error creating disaster area:', error);
+      showNotification('error', 'Failed to create disaster area. Please ensure the shape is closed and has no intersecting edges');
     });
   }
 
@@ -147,6 +195,33 @@ export default function DisasterAreaManagementPage({
 
   return (
     <div className={styles.page}>
+      {/* 通知组件 */}
+      {notification.show && (
+        <div 
+          className={`${styles.notification} ${styles[`notification-${notification.type}`]}`}
+          style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            zIndex: 9999,
+            padding: '12px 20px',
+            borderRadius: '8px',
+            color: 'white',
+            fontWeight: '500',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            maxWidth: '400px',
+            animation: 'slideInRight 0.3s ease-out',
+            backgroundColor: notification.type === 'error' ? '#ef4444' : 
+                           notification.type === 'success' ? '#10b981' : '#3b82f6'
+          }}
+        >
+          {notification.type === 'error' && '❌ '}
+          {notification.type === 'success' && '✅ '}
+          {notification.type === 'info' && 'ℹ️ '}
+          {notification.message}
+        </div>
+      )}
+      
       {/* left sidebar */}
       <aside className={styles.sidebar}>
         <div className={styles.sideTitle}>

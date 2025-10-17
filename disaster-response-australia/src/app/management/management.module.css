@@ -518,3 +518,42 @@
 .detailItem {}
 .detailLabel { color: var(--mgmt-detail-label); font-size: 13px; margin-bottom: 4px; }
 .detailValue { font-weight: 800; }
+
+/* 通知组件样式 */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  animation: slideInRight 0.3s ease-out;
+  word-wrap: break-word;
+}
+
+.notification-error {
+  background-color: #ef4444;
+}
+
+.notification-success {
+  background-color: #10b981;
+}
+
+.notification-info {
+  background-color: #3b82f6;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
