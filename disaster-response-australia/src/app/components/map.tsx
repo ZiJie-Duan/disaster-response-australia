@@ -547,7 +547,8 @@ export default function TerraDrawAdvancedPage( { editable = true, mapMode = 'ori
             historyRef.current.push(processSnapshotForUndo(draw.getSnapshot()));
 
             draw.on("change", (ids, type) => {
-              if (type === 'create') {
+              // 同步所有类型的变化到父组件：create, update, delete, styling
+              if (type === 'create' || type === 'update' || type === 'delete' || type === 'styling') {
                 setFeatures(exportFeatures());
               }
               

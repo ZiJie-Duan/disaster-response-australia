@@ -98,6 +98,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (document && document.cookie.includes("drau_id_token")) {
       // Call API to verify token
+      console.log("Token:", getTokenFromCookie());
       verifyToken();
     }
 

@@ -336,6 +336,40 @@
   justify-content: start;
 }
 
+.toolbarField {
+  display: grid;
+  gap: 6px;
+}
+
+.toolbarLabel {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--mgmt-toolbar-color);
+  opacity: 0.85;
+}
+
+.toolbarInput {
+  padding: 12px 14px;
+  background: var(--mgmt-toolbar-bg);
+  border: 1px solid var(--mgmt-toolbar-border);
+  border-radius: 12px;
+  color: var(--mgmt-toolbar-color);
+  box-shadow: var(--mgmt-shadow);
+}
+
+.toolbarInput::placeholder {
+  color: color-mix(in srgb, var(--mgmt-toolbar-color) 60%, transparent);
+}
+
+.toolbarInput:focus {
+  outline: none;
+  border-color: var(--mgmt-primary-btn);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mgmt-primary-btn) 28%, transparent);
+}
+
+.toolbarInputName { min-width: 260px; }
+.toolbarInputDesc { min-width: 420px; }
+
 .toolbarBtn {
   display: inline-flex;
   align-items: center;

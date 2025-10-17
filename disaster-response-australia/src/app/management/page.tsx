@@ -68,7 +68,52 @@ export default function DisasterAreaManagementPage({
   const [mapMarkersMemory, setMapMarkersMemory] = useState<any[]>([]);
   const [tempMapFeatures, setTempMapFeatures] = useState<any[]>([]);
   const [mapAction, setMapAction] = useState<string>('show'); // 'show' | 'clean_and_edit' 
+  const [disasterAreaName, setDisasterAreaName] = useState<string>("");
+  const [disasterAreaDescription, setDisasterAreaDescription] = useState<string>("");
 
+
+  // Function to get token from cookie
+  const getTokenFromCookie = (): string | null => {
+    if (typeof document === 'undefined') return null;
+    
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'drau_id_token') {
+        return value;
+      }
+    }
+    return null;
+  };
+
+
+  function createDisasterArea() {
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/disaster_areas`, {
+      method: 'POST',
+      body: JSON.stringify({
+        title: disasterAreaName,
+        description: disasterAreaDescription,
+        boundary: {
+          gid: tempMapFeatures[0].id,
+          type: tempMapFeatures[0].geometry.type,
+          coordinates: tempMapFeatures[0].geometry.coordinates,
+        }
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getTokenFromCookie()}`,
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Disaster area created:', data);
+    })
+    .catch(error => {
+      console.error('Error creating disaster area:', error);
+    });
+  }
+
+  
   useEffect(() => {
     // TODO[map]: Initialize the map here, e.g.:
     // const map = new mapboxgl.Map({ container: mapRef.current!, ... });
@@ -164,10 +209,37 @@ export default function DisasterAreaManagementPage({
 
         {mapAction === 'clean_and_edit' && (
           <div className={styles.topbar}>
+
+            <div className={styles.toolbar}>
+              <label className={styles.toolbarField}>
+                <span className={styles.toolbarLabel}>Disaster area name</span>
+                <input
+                  className={`${styles.toolbarInput} ${styles.toolbarInputName}`}
+                  type="text"
+                  placeholder="Enter area name"
+                  aria-label="Disaster area name"
+                  value={disasterAreaName}
+                  onChange={(e) => setDisasterAreaName(e.target.value)}
+                />
+              </label>
+              <label className={styles.toolbarField}>
+                <span className={styles.toolbarLabel}>Disaster area description</span>
+                <input
+                  className={`${styles.toolbarInput} ${styles.toolbarInputDesc}`}
+                  type="text"
+                  placeholder="Add a brief description"
+                  aria-label="Disaster area description"
+                  value={disasterAreaDescription}
+                  onChange={(e) => setDisasterAreaDescription(e.target.value)}
+                />
+              </label>
+            </div>
+
             {editMode ? (
               <ToolbarButton label="Save" onClick={() => {
                 setEditMode(false);
                 setMapAction('show');
+                createDisasterArea();
               }}>
                 <PinIcon />
               </ToolbarButton>
