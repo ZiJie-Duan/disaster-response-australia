@@ -64,14 +64,23 @@ export default function DisasterAreaManagementPage({
   // ====== Map container: Leave empty, will integrate with Map SDK in the future ======
   const mapRef = useRef<HTMLDivElement | null>(null);
 
-  const [editMode, setEditMode] = useState<boolean>(false);
+  type EditMode = 'view' | 'draw' | 'text';
+  type TextLabel = {
+    id: string;
+    position: { lat: number; lng: number };
+    text: string;
+  };
+
+  const [editMode, setEditMode] = useState<EditMode>('view');
   const [mapMarkersMemory, setMapMarkersMemory] = useState<any[]>([]);
   const [tempMapFeatures, setTempMapFeatures] = useState<any[]>([]);
+  const [textLabelsMemory, setTextLabelsMemory] = useState<TextLabel[]>([]);
+  const [tempTextLabels, setTempTextLabels] = useState<TextLabel[]>([]);
   const [mapAction, setMapAction] = useState<string>('show'); // 'show' | 'clean_and_edit' 
   const [disasterAreaName, setDisasterAreaName] = useState<string>("");
   const [disasterAreaDescription, setDisasterAreaDescription] = useState<string>("");
   
-  // 通知系统状态
+  // Notification system state
   const [notification, setNotification] = useState<{
     show: boolean;
     type: 'error' | 'success' | 'info';
@@ -82,7 +91,7 @@ export default function DisasterAreaManagementPage({
     message: ''
   });
 
-  // 显示通知的辅助函数
+  // Helper function to show notifications
   const showNotification = (type: 'error' | 'success' | 'info', message: string) => {
     setNotification({
       show: true,
@@ -90,7 +99,7 @@ export default function DisasterAreaManagementPage({
       message
     });
     
-    // 3秒后自动隐藏通知
+    // Auto-hide notification after 3 seconds
     setTimeout(() => {
       setNotification(prev => ({ ...prev, show: false }));
     }, 3000);
@@ -150,7 +159,7 @@ export default function DisasterAreaManagementPage({
       console.log('Disaster area created:', data);
       showNotification('success', 'Disaster area created successfully!');
       
-      // 清空表单
+      // Clear form
       setDisasterAreaName("");
       setDisasterAreaDescription("");
       setTempMapFeatures([]);
@@ -169,9 +178,12 @@ export default function DisasterAreaManagementPage({
   }, []);
 
 
+  // Avoid frequent logging/render interference in creation mode
   useEffect(() => {
-    console.log('tempMapFeatures', tempMapFeatures);
-  }, [tempMapFeatures]);
+    if (mapAction !== 'clean_and_edit') {
+      console.log('tempMapFeatures', tempMapFeatures);
+    }
+  }, [tempMapFeatures, mapAction]);
 
   // ====== Toolbar actions: Placeholders for now, will be connected to map drawing logic in the future ======
   const handleAddPoint = () => {
@@ -195,7 +207,7 @@ export default function DisasterAreaManagementPage({
 
   return (
     <div className={styles.page}>
-      {/* 通知组件 */}
+      {/* Notification component */}
       {notification.show && (
         <div 
           className={`${styles.notification} ${styles[`notification-${notification.type}`]}`}
@@ -254,8 +266,9 @@ export default function DisasterAreaManagementPage({
           onClick={() => {
             // TODO[backend]: Open a creation dialog, and call the backend to create an area upon submission
             setMapAction('clean_and_edit');
-            setEditMode(true);
+            setEditMode('draw');
             setTempMapFeatures([]);
+            setTempTextLabels([]);
           }}
         >
           Create Disaster Area
@@ -310,17 +323,18 @@ export default function DisasterAreaManagementPage({
               </label>
             </div>
 
-            {editMode ? (
+            {editMode !== 'view' ? (
               <ToolbarButton label="Save" onClick={() => {
-                setEditMode(false);
+                setEditMode('view');
                 setMapAction('show');
                 createDisasterArea();
                 setTempMapFeatures(mapMarkersMemory);
+                setTempTextLabels(textLabelsMemory);
               }}>
                 <PinIcon />
               </ToolbarButton>
             ) : (
-              <ToolbarButton label="Edit" onClick={() => setEditMode(true)}>
+              <ToolbarButton label="Edit" onClick={() => setEditMode('draw')}>
                 <PinIcon />
               </ToolbarButton>
             )}
@@ -331,22 +345,34 @@ export default function DisasterAreaManagementPage({
           <div className={styles.topbar}>
             <div className={styles.toolbar}>
 
-              {editMode ? (
+              {editMode !== 'view' ? (
                 <ToolbarButton label="Save" onClick={
                   () => {
-                    setEditMode(false);
+                    setEditMode('view');
                     setMapMarkersMemory(tempMapFeatures);
+                    setTextLabelsMemory(tempTextLabels);
                     }
                   }>
                   <PinIcon />
                 </ToolbarButton>
               ) : (
-                <ToolbarButton label="Draw" onClick={() => {
-                  setEditMode(true);
-                  setTempMapFeatures(mapMarkersMemory);
-                }}>
-                  <PinIcon />
-                </ToolbarButton>
+                <>
+                  <ToolbarButton label="Draw" onClick={() => {
+                    setEditMode('draw');
+                    setTempMapFeatures(mapMarkersMemory);
+                    setTempTextLabels(textLabelsMemory);
+                  }}>
+                    <PinIcon />
+                  </ToolbarButton>
+                  
+                  <ToolbarButton label="Text Label" onClick={() => {
+                    setEditMode('text');
+                    setTempMapFeatures(mapMarkersMemory);
+                    setTempTextLabels(textLabelsMemory);
+                  }}>
+                    <TextIcon />
+                  </ToolbarButton>
+                </>
               )}
 
               <ToolbarButton label="Something1" onClick={handleAddLine}>
@@ -375,11 +401,16 @@ export default function DisasterAreaManagementPage({
           {/* map container */}
           <div ref={mapRef} id="map-container" className={styles.mapSurface} >
 
-            <Map editable={editMode} mapMode="heatmap" getFeatures={
-              () => {(tempMapFeatures); return tempMapFeatures;}
-            } setFeatures={
-              (features) => setTempMapFeatures(features)
-            } />
+            <Map 
+              editMode={editMode} 
+              mapMode={mapAction === 'clean_and_edit' || editMode !== 'view' ? 'original' : 'heatmap'} 
+              getFeatures={() => tempMapFeatures}
+              setFeatures={(features) => setTempMapFeatures(features)}
+              getTextLabels={() => tempTextLabels}
+              setTextLabels={(labels) => setTempTextLabels(labels)}
+              suppressTextLabels={mapAction === 'clean_and_edit'}
+              limitToolsTo={mapAction === 'clean_and_edit' ? ['polygon','rectangle','circle','freehand','static','select'] : undefined}
+            />
 
           </div>
 
@@ -513,6 +544,13 @@ function BellIcon() {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
       <path d="M12 3a6 6 0 00-6 6v3.5L4.5 14A1 1 0 005 16h14a1 1 0 00.5-1.87L18 12.5V9a6 6 0 00-6-6z" fill="currentColor"/>
       <path d="M9.5 18a2.5 2.5 0 005 0h-5z" fill="currentColor"/>
+    </svg>
+  );
+}
+function TextIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M4 7h16M9 3v4m6-4v4M9 7v13m6-13v13" stroke="currentColor" strokeWidth="2" />
     </svg>
   );
 }

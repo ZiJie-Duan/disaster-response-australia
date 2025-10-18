@@ -60,15 +60,26 @@ function processSnapshotForUndo(snapshot: any[]): any[] {
 
 type ModeId = 'select' | 'point' | 'linestring' | 'polygon' | 'rectangle' | 'circle' | 'freehand' | 'static' | 'freeze';
 type MapMode = 'original'| 'heatmap';
+type EditMode = 'view' | 'draw' | 'text';
+
+interface TextLabel {
+  id: string;
+  position: { lat: number; lng: number };
+  text: string;
+}
 
 interface TerraDrawAdvancedPageProps {
-  editable: boolean
+  editMode: EditMode
   mapMode: MapMode
   getFeatures: () => any[]
   setFeatures: (features: any[]) => void
+  getTextLabels: () => TextLabel[]
+  setTextLabels: (labels: TextLabel[]) => void
+  suppressTextLabels?: boolean
+  limitToolsTo?: ModeId[]
 };
 
-export default function TerraDrawAdvancedPage( { editable = true, mapMode = 'original', getFeatures, setFeatures }: TerraDrawAdvancedPageProps ) {
+export default function TerraDrawAdvancedPage( { editMode = 'view', mapMode = 'original', getFeatures, setFeatures, getTextLabels, setTextLabels, suppressTextLabels = false, limitToolsTo }: TerraDrawAdvancedPageProps ) {
   const mapDivRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const drawRef = useRef<TerraDraw | null>(null);
@@ -78,10 +89,18 @@ export default function TerraDrawAdvancedPage( { editable = true, mapMode = 'ori
   const isRestoringRef = useRef<boolean>(false);
   const debounceTimeoutRef = useRef<number | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const lastFeaturesJSONRef = useRef<string>("");
+  const textOverlaysRef = useRef<Map<string, any>>(new Map());
+  const mapClickListenerRef = useRef<google.maps.MapsEventListener | null>(null);
+  const isAddingTextRef = useRef<boolean>(false);
+  const isDeletingTextRef = useRef<boolean>(false);
+  const TextOverlayClassRef = useRef<any>(null);
   
   const [activeMode, setActiveMode] = useState<ModeId>('point');
   const [resizingEnabled, setResizingEnabled] = useState<boolean>(false);
   const [heatmapLayer, setHeatmapLayer] = useState<google.maps.visualization.HeatmapLayer | null>(null);
+  const [isAddingText, setIsAddingText] = useState<boolean>(false);
+  const [isDeletingText, setIsDeletingText] = useState<boolean>(false);
 
   function importFeatures(features: any[]) {
     if (!drawRef.current) return;
@@ -97,6 +116,10 @@ export default function TerraDrawAdvancedPage( { editable = true, mapMode = 'ori
   // Mode switching function
   const switchMode = (mode: ModeId) => {
     if (!drawRef.current) return;
+    // If there are restricted tools, only allow whitelisted modes
+    if (limitToolsTo && !limitToolsTo.includes(mode)) {
+      return;
+    }
 
     // console.log(drawRef.current.getSnapshot());
     // drawRef.current!.addFeatures([{
@@ -126,16 +149,218 @@ export default function TerraDrawAdvancedPage( { editable = true, mapMode = 'ori
     setActiveMode(mode);
   };
 
+  // Clear or restore text labels when suppressTextLabels changes
+  useEffect(() => {
+    if (!mapRef.current) return;
+    // Skip if TextOverlayClass is not yet initialized
+    const TextOverlayClass = TextOverlayClassRef.current;
+    if (suppressTextLabels) {
+      // Enter suppression: immediately clear all text overlays
+      textOverlaysRef.current.forEach(overlay => overlay.setMap(null));
+      textOverlaysRef.current.clear();
+    } else if (TextOverlayClass) {
+      // Exit suppression: reload
+      loadTextLabels(TextOverlayClass);
+    }
+  }, [suppressTextLabels]);
+
+  // Text label related functions
+  const createTextOverlay = (label: TextLabel, TextOverlayClass: any) => {
+    if (!mapRef.current) return null;
+    
+    const overlay = new TextOverlayClass(
+      new google.maps.LatLng(label.position.lat, label.position.lng),
+      label.text,
+      mapRef.current,
+      label.id,
+      (id: string) => handleTextClick(id)
+    );
+    
+    // Ensure interactivity immediately after creation (in some cases onAdd completes with a slight delay)
+    // Schedule both a microtask and a short timeout as double insurance
+    setTimeout(() => {
+      overlay.setInteractive(true);
+    }, 0);
+
+    return overlay;
+  };
+
+  const handleTextClick = (id: string) => {
+    // Completely rely on isDeletingTextRef to decide behavior, don't check editMode
+    // This avoids issues with closures capturing stale editMode values
+    
+    // If in delete mode, delete directly
+    if (isDeletingTextRef.current) {
+      const overlay = textOverlaysRef.current.get(id);
+      if (overlay) {
+        overlay.setMap(null);
+        textOverlaysRef.current.delete(id);
+      }
+      
+      // Remove from data
+      const currentLabels = getTextLabels();
+      const updatedLabels = currentLabels.filter(label => label.id !== id);
+      setTextLabels(updatedLabels);
+      
+      // Keep delete mode active for continuous deletion
+    }
+    // If not in delete mode, do nothing when clicking text label
+  };
+
+  const addTextLabel = () => {
+    // Exit delete mode
+    setIsDeletingText(false);
+    isDeletingTextRef.current = false;
+    
+    setIsAddingText(true);
+    isAddingTextRef.current = true;
+    if (mapRef.current) {
+      mapRef.current.setOptions({ draggableCursor: 'crosshair' });
+    }
+  };
+
+  const toggleDeleteText = () => {
+    // Exit add mode
+    if (isAddingText) {
+      setIsAddingText(false);
+      isAddingTextRef.current = false;
+      if (mapRef.current) {
+        mapRef.current.setOptions({ draggableCursor: null });
+      }
+    }
+    
+    // Toggle delete mode
+    const newDeletingState = !isDeletingText;
+    setIsDeletingText(newDeletingState);
+    isDeletingTextRef.current = newDeletingState;
+    
+    if (mapRef.current) {
+      mapRef.current.setOptions({ 
+        draggableCursor: newDeletingState ? 'pointer' : null 
+      });
+    }
+    
+    // When entering delete mode, ensure all text overlays are interactive
+    if (newDeletingState) {
+      textOverlaysRef.current.forEach((overlay) => {
+        overlay.setInteractive(true);
+      });
+    }
+  };
+
+  const loadTextLabels = (TextOverlayClass: any) => {
+    if (!mapRef.current) return;
+    
+    // Clear existing text labels
+    textOverlaysRef.current.forEach(overlay => overlay.setMap(null));
+    textOverlaysRef.current.clear();
+    
+    // If suppressed, return early (avoid reloading)
+    if (suppressTextLabels) return;
+
+    // Load text labels (only when not suppressed)
+    if (!suppressTextLabels) {
+      const labels = getTextLabels();
+      labels.forEach(label => {
+        const overlay = createTextOverlay(label, TextOverlayClass);
+        if (overlay) {
+          textOverlaysRef.current.set(label.id, overlay);
+          
+          // Delay setting interactivity to ensure onAdd is complete
+          setTimeout(() => {
+            overlay.setInteractive(editMode === 'text');
+          }, 100);
+        }
+      });
+    }
+  };
+
+  const updateTextOverlaysInteractivity = () => {
+    textOverlaysRef.current.forEach((overlay) => {
+      overlay.setInteractive(editMode === 'text');
+    });
+    
+    // If not in text mode, reset all states
+    if (editMode !== 'text') {
+      // Reset add text state
+      if (isAddingTextRef.current) {
+        setIsAddingText(false);
+        isAddingTextRef.current = false;
+      }
+      
+      // Reset delete state
+      if (isDeletingTextRef.current) {
+        setIsDeletingText(false);
+        isDeletingTextRef.current = false;
+      }
+      
+      if (mapRef.current) {
+        mapRef.current.setOptions({ draggableCursor: null });
+      }
+    }
+  };
+
   function autoSwitchMode() {
-    if (!editable) {
-      switchMode('freeze');
+    if (!drawRef.current) return;
+    
+    // If there are restricted tools, enforce whitelisted modes
+    const safeSetMode = (m: ModeId) => {
+      if (limitToolsTo && !limitToolsTo.includes(m)) {
+        const fallback = limitToolsTo[0] ?? 'select';
+        drawRef.current!.setMode(fallback);
+        setActiveMode(fallback);
+      } else {
+        drawRef.current!.setMode(m);
+        setActiveMode(m);
+      }
+    };
+
+    if (editMode === 'view') {
+      safeSetMode('static');
+    } else if (editMode === 'draw') {
+      // Only set once when entering draw mode, don't auto-override user's subsequent choices
+      if (!drawRef.current) return;
+      const current = drawRef.current.getMode?.();
+      const desired = limitToolsTo && limitToolsTo.length > 0 ? limitToolsTo[0] : 'select';
+      if (current !== desired) {
+        safeSetMode(desired);
+      }
+    } else if (editMode === 'text') {
+      // In text mode, completely stop TerraDraw to avoid event interception
+      try {
+        drawRef.current.stop();
+      } catch (e) {
+        console.error("Error stopping TerraDraw:", e);
+      }
     }
   };
 
   useEffect(() => {
+    if (!drawRef.current) return;
+    
+    // If switching out from text mode, need to restart TerraDraw
+    if (editMode !== 'text' && !drawRef.current.enabled) {
+      try {
+        drawRef.current.start();
+        // If tools are restricted, switch to first whitelisted mode after starting
+        if (limitToolsTo && limitToolsTo.length > 0) {
+          drawRef.current.setMode(limitToolsTo[0]);
+        } else {
+          drawRef.current.setMode('select');
+        }
+      } catch (e) {
+        console.error("Error starting TerraDraw:", e);
+      }
+    }
+    
     autoSwitchMode();
-    importFeatures(getFeatures());
-  }, [editable]);
+    
+    if (editMode !== 'text') {
+      importFeatures(getFeatures());
+    }
+    
+    updateTextOverlaysInteractivity();
+  }, [editMode]);
 
   // Export GeoJSON
   const exportGeoJSON = () => {
@@ -376,23 +601,59 @@ export default function TerraDrawAdvancedPage( { editable = true, mapMode = 'ori
           clickableIcons: false,
           streetViewControl: false,
           fullscreenControl: false,
+          disableDoubleClickZoom: true,
+          gestureHandling: 'greedy',
         };
 
         const map = new Map(mapDivRef.current, mapOptions);
         mapRef.current = map;
 
         const TextOverlay = createTextOverlayClass(google.maps);
+        TextOverlayClassRef.current = TextOverlay;
 
-        new TextOverlay(
-          new google.maps.LatLng(48.862, 2.342),
-          "Paris this is a complete text overlay",
-          map
-        );
+        // Load initial text labels
+        loadTextLabels(TextOverlay);
 
+        // Map click event - for adding text labels
+        mapClickListenerRef.current = map.addListener("click", (e: google.maps.MapMouseEvent) => {
+          // Use ref to access latest state
+          if (isAddingTextRef.current && e.latLng) {
+            const text = prompt("Enter text label content:");
+            if (text && text.trim()) {
+              const newLabel: TextLabel = {
+                id: crypto.randomUUID(),
+                position: { lat: e.latLng.lat(), lng: e.latLng.lng() },
+                text: text.trim()
+              };
+              
+              // Create text overlay
+              const overlay = createTextOverlay(newLabel, TextOverlayClassRef.current);
+              if (overlay) {
+                textOverlaysRef.current.set(newLabel.id, overlay);
+                
+                // Delay setting interactivity to ensure onAdd is complete
+                setTimeout(() => {
+                  overlay.setInteractive(true);
+                }, 100);
+              }
+              
+              // Update data
+              const currentLabels = getTextLabels();
+              setTextLabels([...currentLabels, newLabel]);
+            }
+            
+            // Exit add mode
+            setIsAddingText(false);
+            isAddingTextRef.current = false;
+            map.setOptions({ draggableCursor: null });
+          }
+        });
 
-        map.addListener("click", () => {
-          if (drawRef.current) {
-            console.log("Current draw mode on map click:", drawRef.current.getMode());
+        // Prevent double-click events from being consumed by map (for polygon/rectangle completion gestures)
+        map.addListener("dblclick", (e: google.maps.MapMouseEvent) => {
+          if (e.domEvent) {
+            e.domEvent.preventDefault?.();
+            e.domEvent.stopPropagation?.();
           }
         });
 
@@ -525,12 +786,24 @@ export default function TerraDrawAdvancedPage( { editable = true, mapMode = 'ori
 
           drawRef.current = draw;
           draw.start();
+          // If tools are restricted, default to first whitelisted mode
+          if (limitToolsTo && limitToolsTo.length > 0) {
+            try {
+              draw.setMode(limitToolsTo[0]);
+              setActiveMode(limitToolsTo[0]);
+            } catch {}
+          }
 
 
           draw.on('ready', () => {
-            console.log("TerraDraw is ready!");
-            draw.setMode('select');
-            setActiveMode('select');
+            // After initialization, don't force to select, follow limitToolsTo or keep current mode
+            const initialMode: ModeId = (limitToolsTo && limitToolsTo.length > 0)
+              ? limitToolsTo[0]
+              : 'select';
+            try {
+              draw.setMode(initialMode);
+              setActiveMode(initialMode);
+            } catch {}
 
             draw.on("select", (id) => {
               if (selectedFeatureIdRef.current && selectedFeatureIdRef.current !== id) {
@@ -547,13 +820,19 @@ export default function TerraDrawAdvancedPage( { editable = true, mapMode = 'ori
             historyRef.current.push(processSnapshotForUndo(draw.getSnapshot()));
 
             draw.on("change", (ids, type) => {
-              // 同步所有类型的变化到父组件：create, update, delete, styling
-              if (type === 'create' || type === 'update' || type === 'delete' || type === 'styling') {
-                setFeatures(exportFeatures());
-              }
-              
-              if (isRestoringRef.current) {
-                return;
+              if (isRestoringRef.current) return;
+
+              // Only sync to parent when features actually change, avoid unnecessary loops
+              const snapshot = draw.getSnapshot();
+              const processedSnapshot = processSnapshotForUndo(snapshot);
+              const filteredSnapshot = processedSnapshot.filter(
+                (f) => !f.properties.midPoint && !f.properties.selectionPoint
+              );
+
+              const json = JSON.stringify(filteredSnapshot);
+              if (json !== lastFeaturesJSONRef.current) {
+                lastFeaturesJSONRef.current = json;
+                setFeatures(filteredSnapshot);
               }
 
               if (debounceTimeoutRef.current) {
@@ -561,17 +840,12 @@ export default function TerraDrawAdvancedPage( { editable = true, mapMode = 'ori
               }
 
               debounceTimeoutRef.current = window.setTimeout(() => {
-                const snapshot = draw.getSnapshot();
-                const processedSnapshot = processSnapshotForUndo(snapshot);
-                const filteredSnapshot = processedSnapshot.filter(
-                  (f) => !f.properties.midPoint && !f.properties.selectionPoint
-                );
                 historyRef.current.push(filteredSnapshot);
                 redoHistoryRef.current = [];
               }, 200);
             });
 
-            // Keyboard event listener
+            // Keyboard event listener (disable browser's default double-click zoom while ensuring TerraDraw's double-click completion)
             const handleKeyDown = (event: KeyboardEvent) => {
               if (event.key === 'r' && selectedFeatureIdRef.current) {
                 const features = draw.getSnapshot();
@@ -585,10 +859,17 @@ export default function TerraDrawAdvancedPage( { editable = true, mapMode = 'ori
             };
 
             document.addEventListener('keydown', handleKeyDown);
+            // Defensive: some browsers may still have default double-click behavior, disable at document level
+            const handleDblClick = (e: MouseEvent) => {
+              e.preventDefault();
+              e.stopPropagation();
+            };
+            document.addEventListener('dblclick', handleDblClick, { capture: true });
             
             // Return cleanup function
             return () => {
               document.removeEventListener('keydown', handleKeyDown);
+              document.removeEventListener('dblclick', handleDblClick, { capture: true } as any);
             };
           });
         });
@@ -611,10 +892,19 @@ export default function TerraDrawAdvancedPage( { editable = true, mapMode = 'ori
         drawRef.current = null;
       }
 
-      // Cleanup event listener
+      // Cleanup text overlays
+      textOverlaysRef.current.forEach(overlay => overlay.setMap(null));
+      textOverlaysRef.current.clear();
+
+      // Cleanup event listeners
       if (projectionListener) {
         projectionListener.remove();
         projectionListener = null;
+      }
+
+      if (mapClickListenerRef.current) {
+        mapClickListenerRef.current.remove();
+        mapClickListenerRef.current = null;
       }
 
       // Cleanup timer
@@ -664,7 +954,7 @@ export default function TerraDrawAdvancedPage( { editable = true, mapMode = 'ori
     <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Toolbar */}
 
-      { editable ? (
+      { editMode === 'draw' ? (
         <>
           <div
             style={{
@@ -674,6 +964,7 @@ export default function TerraDrawAdvancedPage( { editable = true, mapMode = 'ori
               borderBottom: '1px solid #eee',
               alignItems: 'center',
               flexWrap: 'wrap',
+              // Use theme-consistent light background (remove obvious yellow/highlight)
               backgroundColor: '#f8f9fa',
             }}
           >
@@ -687,7 +978,9 @@ export default function TerraDrawAdvancedPage( { editable = true, mapMode = 'ori
               { id: 'circle', label: 'Circle', icon: '⭕' },
               { id: 'freehand', label: 'Freehand', icon: '✏️' },
               { id: 'static', label: 'Clear', icon: '🗑️' },
-            ] as { id: ModeId; label: string; icon: string }[]).map((mode) => (
+            ] as { id: ModeId; label: string; icon: string }[])
+              .filter((mode) => !limitToolsTo || limitToolsTo.includes(mode.id))
+              .map((mode) => (
               <button
                 key={mode.id}
                 onClick={() => switchMode(mode.id)}
@@ -814,6 +1107,85 @@ export default function TerraDrawAdvancedPage( { editable = true, mapMode = 'ori
           </div>
 
         </>
+      ) : null }
+
+      { editMode === 'text' ? (
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            padding: 12,
+            borderBottom: '1px solid #eee',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            // Use theme-consistent light background (remove yellow emphasis)
+            backgroundColor: '#f8f9fa',
+          }}
+        >
+          {/* Mode indicator (subdued visual emphasis, matches theme style) */}
+          <div style={{
+            padding: '6px 10px',
+            borderRadius: 6,
+            background: '#e9ecef',
+            color: '#343a40',
+            fontWeight: 500,
+            fontSize: 13,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+          }}>
+            <span>📝</span>
+            Text mode
+          </div>
+
+          <div style={{ width: 1, height: 30, backgroundColor: '#ddd', margin: '0 8px' }} />
+          
+          {/* Add text button */}
+          <button
+            onClick={addTextLabel}
+            style={{
+              padding: '8px 12px',
+              borderRadius: 6,
+              border: '1px solid #ddd',
+              background: isAddingText ? '#28a745' : '#fff',
+              color: isAddingText ? '#fff' : '#333',
+              cursor: 'pointer',
+              fontSize: 14,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              transition: 'all 0.2s',
+            }}
+          >
+            <span>➕</span>
+            {isAddingText ? 'Adding...' : 'Add Text'}
+          </button>
+
+          {/* Delete text button */}
+          <button
+            onClick={toggleDeleteText}
+            style={{
+              padding: '8px 12px',
+              borderRadius: 6,
+              border: '1px solid #dc3545',
+              background: isDeletingText ? '#dc3545' : '#fff',
+              color: isDeletingText ? '#fff' : '#dc3545',
+              cursor: 'pointer',
+              fontSize: 14,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              transition: 'all 0.2s',
+            }}
+          >
+            <span>🗑️</span>
+            {isDeletingText ? 'Deleting...' : 'Delete Text'}
+          </button>
+          
+          <div style={{ marginLeft: 'auto', padding: '8px 12px', color: '#856404', fontSize: 12 }}>
+            💡 Tip: {isAddingText ? 'Click map to add text' : isDeletingText ? 'Click text label to delete' : 'Select tool to start'}
+          </div>
+        </div>
       ) : null }
 
       {/* Map container */}
