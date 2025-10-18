@@ -189,15 +189,6 @@ export default function DisasterAreaManagementPage({
   const handleAddPoint = () => {
     // TODO[map]: Activate "add point" mode (click on the map to place a point)
   };
-  const handleAddLine = () => {
-    // TODO[map]: Activate "add line" mode (polyline)
-  };
-  const handleAddArea = () => {
-    // TODO[map]: Activate "add polygon" mode (polygon)
-  };
-  const handleDelete = () => {
-    // TODO[map]: Delete selected shape/feature
-  };
 
   // ====== Switch area: In the future, fetch area details/device list from the backend and then setState ======
   const selectArea = (id: string) => {
@@ -372,18 +363,15 @@ export default function DisasterAreaManagementPage({
                   }}>
                     <TextIcon />
                   </ToolbarButton>
+
+                  <ToolbarButton label="计数统计" onClick={() => {
+                    // TODO: Implement statistics counting functionality
+                    showNotification('info', '计数统计功能即将推出');
+                  }}>
+                    <ChartIcon />
+                  </ToolbarButton>
                 </>
               )}
-
-              <ToolbarButton label="Something1" onClick={handleAddLine}>
-                <SlashIcon />
-              </ToolbarButton>
-              <ToolbarButton label="Something2" onClick={handleAddArea}>
-                <PlusIcon />
-              </ToolbarButton>
-              <ToolbarButton label="Something3" onClick={handleDelete} variant="danger">
-                <TrashIcon />
-              </ToolbarButton>
             </div>
 
             <div className={styles.userCluster}>
@@ -551,6 +539,13 @@ function TextIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
       <path d="M4 7h16M9 3v4m6-4v4M9 7v13m6-13v13" stroke="currentColor" strokeWidth="2" />
+    </svg>
+  );
+}
+function ChartIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M3 3v18h18M7 16V9m4 7v-5m4 5V8m4 8V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
