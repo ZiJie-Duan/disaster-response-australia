@@ -315,6 +315,7 @@ export default function DisasterAreaManagementPage({
                 setEditMode(false);
                 setMapAction('show');
                 createDisasterArea();
+                setTempMapFeatures(mapMarkersMemory);
               }}>
                 <PinIcon />
               </ToolbarButton>
@@ -331,11 +332,19 @@ export default function DisasterAreaManagementPage({
             <div className={styles.toolbar}>
 
               {editMode ? (
-                <ToolbarButton label="Save" onClick={() => setEditMode(false)}>
+                <ToolbarButton label="Save" onClick={
+                  () => {
+                    setEditMode(false);
+                    setMapMarkersMemory(tempMapFeatures);
+                    }
+                  }>
                   <PinIcon />
                 </ToolbarButton>
               ) : (
-                <ToolbarButton label="Edit" onClick={() => setEditMode(true)}>
+                <ToolbarButton label="Draw" onClick={() => {
+                  setEditMode(true);
+                  setTempMapFeatures(mapMarkersMemory);
+                }}>
                   <PinIcon />
                 </ToolbarButton>
               )}
