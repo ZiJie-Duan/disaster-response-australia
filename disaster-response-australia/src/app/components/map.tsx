@@ -91,6 +91,7 @@ export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode
   const selectedFeatureIdRef = useRef<string | null>(null);
   const isRestoringRef = useRef<boolean>(false);
   const debounceTimeoutRef = useRef<number | undefined>(undefined);
+  const heatmapFetchTimeoutRef = useRef<number | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const lastFeaturesJSONRef = useRef<string>("");
   const textOverlaysRef = useRef<Map<string, any>>(new Map());
@@ -685,13 +686,29 @@ export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode
           }
         });
 
-        // Load heatmap data when map becomes idle (finished loading/moving)
+        // Load heatmap数据在用户静止1秒后再拉取，减少卡顿
         map.addListener("idle", () => {
-          if (mapMode === 'heatmap') {  
-            console.log("Map idle - loading heatmap data");
-            loadHeatmapData(map);
+          if (heatmapFetchTimeoutRef.current) {
+            clearTimeout(heatmapFetchTimeoutRef.current);
           }
+          heatmapFetchTimeoutRef.current = window.setTimeout(() => {
+            if (mapMode === 'heatmap') {
+              console.log("Map idle for 1s - loading heatmap data");
+              loadHeatmapData(map);
+            }
+          }, 1000);
         });
+
+        // 用户开始交互时（拖拽/缩放/边界变化），取消等待中的热力图拉取
+        const cancelPendingHeatmapFetch = () => {
+          if (heatmapFetchTimeoutRef.current) {
+            clearTimeout(heatmapFetchTimeoutRef.current);
+            heatmapFetchTimeoutRef.current = undefined;
+          }
+        };
+        map.addListener("dragstart", cancelPendingHeatmapFetch);
+        map.addListener("zoom_changed", cancelPendingHeatmapFetch);
+        map.addListener("bounds_changed", cancelPendingHeatmapFetch);
 
         projectionListener = map.addListener("projection_changed", () => {
           if (drawRef.current || cancelled) return;
@@ -941,6 +958,11 @@ export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode
       // Cleanup timer
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
+      }
+
+      // Cleanup heatmap debounce timer
+      if (heatmapFetchTimeoutRef.current) {
+        clearTimeout(heatmapFetchTimeoutRef.current);
       }
 
       mapRef.current = null;
