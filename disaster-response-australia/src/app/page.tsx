@@ -26,6 +26,7 @@ const asPlaceholder = (v: React.ReactNode) => (v === undefined || v === null || 
 export default function DashboardPage() {
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [isLogIn, setIsLogIn] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [data, setData] = useState({
     activeAreaName: "",
     resolvedAreas: "",
@@ -34,11 +35,71 @@ export default function DashboardPage() {
     latestReleases: [] as { title: string; href?: string }[],
   });
 
+  // Function to get token from cookie
+  const getTokenFromCookie = (): string | null => {
+    if (typeof document === 'undefined') return null;
+    
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'drau_id_token') {
+        return value;
+      }
+    }
+    return null;
+  };
+
+  // Function to verify token
+  const verifyToken = async () => {
+    try {
+      setAuthError(null); // Clear previous errors
+      const token = getTokenFromCookie();
+      if (!token) {
+        console.log("Token not found");
+        setIsLogIn(false);
+        return;
+      }
+
+      const backendUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/users/verify-token`;
+      const response = await fetch(backendUrl, {
+        method: 'GET',
+        credentials: 'include', // Include cookies
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.is_valid === true) {
+        setIsLogIn(true);
+        setAuthError(null);
+        console.log("Token verification successful");
+      } else {
+        // Token invalid, clear cookie and set as not logged in
+        document.cookie = "drau_id_token=; path=/; max-age=0";
+        setIsLogIn(false);
+        setAuthError("Authentication failed, please log in again");
+        console.log("Token invalid, cleared");
+      }
+    } catch (error) {
+      // Request error, show network error message
+      console.error("Token verification failed:", error);
+      setAuthError("Authentication failed, please check network and log in again");
+      setIsLogIn(false);
+    }
+  };
+
   useEffect(() => {
     if (document && document.cookie.includes("drau_id_token")) {
-      // maybe in the future, change to Context to store the token
-      // TODO: Verify the token is valid and is not expired
-      setIsLogIn(true);
+      // Call API to verify token
+      console.log("Token:", getTokenFromCookie());
+      verifyToken();
     }
 
     // TODO: Replace with actual data from the backend, Fetch here
@@ -63,6 +124,21 @@ export default function DashboardPage() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
+      {/* Error notification */}
+      {authError && (
+        <div className="bg-red-500 text-white px-4 py-3 text-center">
+          <div className="mx-auto max-w-7xl">
+            <span className="text-sm font-medium">{authError}</span>
+            <button
+              onClick={() => setAuthError(null)}
+              className="ml-4 text-white hover:text-gray-200 underline"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+      
       {/* Top navigation bar */}
       <header className="bg-[#0C1E3B] text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
@@ -77,6 +153,14 @@ export default function DashboardPage() {
           {/* Right side: Actions */}
           { isLogIn ? (
             <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                window.location.href = "/management";
+              }}
+              className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur hover:bg-white/15"
+            >
+              Management
+            </button>
             <button
               onClick={() => {
                 document.cookie = "drau_id_token=; path=/; max-age=0";
@@ -192,7 +276,7 @@ function MapCard() {
           id="map"
           className="h-full w-full border-2 border-dashed border-border"
         >
-          <Map editable={false} />
+          <Map editable={false} mapMode="original" getFeatures={() => []} setFeatures={() => {}} />
         </div>
       </div>
 

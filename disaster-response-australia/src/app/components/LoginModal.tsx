@@ -49,7 +49,7 @@ export default function LoginModal({ onClose, setIsLogIn }: LoginModalProps) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      onClick={onClose}
+      onDoubleClick={onClose}
     >
       <div
         className="relative w-full max-w-md rounded-2xl bg-[#0C1E3B] text-white shadow-lg ring-1 ring-white/20 p-8"
