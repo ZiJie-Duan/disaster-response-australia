@@ -98,8 +98,6 @@ export default function DashboardPage() {
   useEffect(() => {
     if (document && document.cookie.includes("drau_id_token")) {
       // Call API to verify token
-      console.log("Token:", getTokenFromCookie());
-      console.log("API Base URL:", process.env.NEXT_PUBLIC_API_BASE_URL, "Google Maps API Key:", process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)
       verifyToken();
     }
 
