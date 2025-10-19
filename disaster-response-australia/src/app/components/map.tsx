@@ -69,6 +69,7 @@ interface TextLabel {
 }
 
 interface TerraDrawAdvancedPageProps {
+  key: number
   editMode: EditMode
   mapMode: MapMode
   getFeatures: () => any[]
@@ -77,9 +78,11 @@ interface TerraDrawAdvancedPageProps {
   setTextLabels: (labels: TextLabel[]) => void
   suppressTextLabels?: boolean
   limitToolsTo?: ModeId[]
+  mapCenter?: { lat: number; lng: number }
+  mapZoom?: number
 };
 
-export default function TerraDrawAdvancedPage( { editMode = 'view', mapMode = 'original', getFeatures, setFeatures, getTextLabels, setTextLabels, suppressTextLabels = false, limitToolsTo }: TerraDrawAdvancedPageProps ) {
+export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode = 'original', getFeatures, setFeatures, getTextLabels, setTextLabels, suppressTextLabels = false, limitToolsTo, mapCenter, mapZoom }: TerraDrawAdvancedPageProps ) {
   const mapDivRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const drawRef = useRef<TerraDraw | null>(null);
@@ -148,6 +151,19 @@ export default function TerraDrawAdvancedPage( { editMode = 'view', mapMode = 'o
     }
     setActiveMode(mode);
   };
+
+  // Move map when mapCenter or mapZoom changes
+  useEffect(() => {
+    if (!mapRef.current) return;
+    
+    if (mapCenter) {
+      mapRef.current.setCenter(mapCenter);
+    }
+    
+    if (mapZoom !== undefined) {
+      mapRef.current.setZoom(mapZoom);
+    }
+  }, [mapCenter, mapZoom]);
 
   // Clear or restore text labels when suppressTextLabels changes
   useEffect(() => {
@@ -354,13 +370,17 @@ export default function TerraDrawAdvancedPage( { editMode = 'view', mapMode = 'o
     }
     
     autoSwitchMode();
+  
+    updateTextOverlaysInteractivity();
     
+  }, [editMode]);
+
+  useEffect(() => {
     if (editMode !== 'text') {
+      console.log('importFeatures', getFeatures());
       importFeatures(getFeatures());
     }
-    
-    updateTextOverlaysInteractivity();
-  }, [editMode]);
+  }, [key, editMode]);
 
   // Export GeoJSON
   const exportGeoJSON = () => {
@@ -608,6 +628,14 @@ export default function TerraDrawAdvancedPage( { editMode = 'view', mapMode = 'o
         const map = new Map(mapDivRef.current, mapOptions);
         mapRef.current = map;
 
+        // Apply initial center/zoom if provided via props to avoid missing first effect due to init timing
+        if (mapCenter) {
+          map.setCenter(mapCenter);
+        }
+        if (mapZoom !== undefined) {
+          map.setZoom(mapZoom);
+        }
+
         const TextOverlay = createTextOverlayClass(google.maps);
         TextOverlayClassRef.current = TextOverlay;
 
@@ -805,6 +833,9 @@ export default function TerraDrawAdvancedPage( { editMode = 'view', mapMode = 'o
               setActiveMode(initialMode);
             } catch {}
 
+            // Import initial features once TerraDraw is ready
+            importFeatures(getFeatures());
+
             draw.on("select", (id) => {
               if (selectedFeatureIdRef.current && selectedFeatureIdRef.current !== id) {
                 draw.deselectFeature(selectedFeatureIdRef.current);
@@ -951,7 +982,7 @@ export default function TerraDrawAdvancedPage( { editMode = 'view', mapMode = 'o
   };
 
   return (
-    <div style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Toolbar */}
 
       { editMode === 'draw' ? (
@@ -1189,13 +1220,13 @@ export default function TerraDrawAdvancedPage( { editMode = 'view', mapMode = 'o
       ) : null }
 
       {/* Map container */}
-      <div 
-        ref={mapDivRef} 
-        style={{ 
-          flex: 1, 
+      <div
+        ref={mapDivRef}
+        style={{
+          flex: 1,
           minHeight: 0,
           position: 'relative'
-        }} 
+        }}
       />
       
       {/* Hidden file input */}

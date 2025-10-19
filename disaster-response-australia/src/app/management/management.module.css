@@ -313,7 +313,7 @@
 .areaStatus { color: var(--mgmt-muted); font-size: 13px; margin-top: 2px; }
 
 /* Right main area */
-.main { padding: 22px 22px 28px; }
+.main { padding: 22px 22px 28px; display: flex; flex-direction: column; min-height: 100dvh; }
 
 /* Top */
 .topbar {
@@ -419,10 +419,16 @@
   border-radius: 18px;
   padding: 16px;
   box-shadow: var(--mgmt-shadow);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .mapSurface {
-  height: 520px;
+  height: 100%;
+  min-height: 320px;
+  flex: 1;
   background:
     linear-gradient(90deg, var(--mgmt-map-surface-major) 1px, transparent 1px),
     linear-gradient(var(--mgmt-map-surface-major) 1px, transparent 1px),
@@ -519,7 +525,7 @@
 .detailLabel { color: var(--mgmt-detail-label); font-size: 13px; margin-bottom: 4px; }
 .detailValue { font-weight: 800; }
 
-/* 通知组件样式 */
+/* Notification component styles */
 .notification {
   position: fixed;
   top: 20px;

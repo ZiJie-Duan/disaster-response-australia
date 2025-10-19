@@ -45,21 +45,83 @@ const EMPTY_MANAGEMENT_DATA: ManagementData = {
   verifiedDevices: [],
 };
 
+// Helper function: Convert API status to AreaStatus used by component
+function mapApiStatusToAreaStatus(apiStatus: string): AreaStatus {
+  switch (apiStatus?.toLowerCase()) {
+    case 'active':
+      return 'Active Disaster';
+    case 'resolved':
+      return 'Resolved';
+    case 'safe':
+      return 'Safe';
+    default:
+      return 'Active Disaster'; // Default value
+  }
+}
+
+// Helper function: Calculate polygon boundary center point
+function calculatePolygonCenter(coordinates: number[][][]): { lat: number; lng: number } {
+  // Safety check and default fallback (Sydney)
+  if (!coordinates || coordinates.length === 0 || coordinates[0].length < 3) {
+    return { lat: -33.8688, lng: 151.2093 };
+  }
+
+  // Only use outer ring to calculate centroid; coordinates are [lng, lat]
+  const ring = coordinates[0];
+
+  // If closed (first and last points are the same), remove the last duplicate point to avoid affecting area
+  const n = ring.length;
+  const isClosed = n > 1 && ring[0][0] === ring[n - 1][0] && ring[0][1] === ring[n - 1][1];
+  const pts = isClosed ? ring.slice(0, n - 1) : ring.slice();
+
+  if (pts.length < 3) {
+    return { lat: -33.8688, lng: 151.2093 };
+  }
+
+  // Use shoelace formula to calculate area-weighted centroid (approximate planar coordinates)
+  let twiceArea = 0; // Actually 2 * signed area
+  let cxTimes6Area = 0; // Actually 6 * area * Cx
+  let cyTimes6Area = 0; // Actually 6 * area * Cy
+
+  for (let i = 0; i < pts.length; i++) {
+    const [x0, y0] = [pts[i][0], pts[i][1]]; // lng, lat
+    const [x1, y1] = [pts[(i + 1) % pts.length][0], pts[(i + 1) % pts.length][1]];
+    const cross = x0 * y1 - x1 * y0;
+    twiceArea += cross;
+    cxTimes6Area += (x0 + x1) * cross;
+    cyTimes6Area += (y0 + y1) * cross;
+  }
+
+  // When area is 0 (degenerate polygon), fall back to vertex averaging
+  if (twiceArea === 0) {
+    let sumX = 0;
+    let sumY = 0;
+    for (const p of pts) {
+      sumX += p[0];
+      sumY += p[1];
+    }
+    return { lat: sumY / pts.length, lng: sumX / pts.length };
+  }
+
+  const area = twiceArea / 2;
+  const cx = cxTimes6Area / (3 * twiceArea); // (1 / (6A)) * Σ (x0 + x1) * cross
+  const cy = cyTimes6Area / (3 * twiceArea); // (1 / (6A)) * Σ (y0 + y1) * cross
+
+  return { lat: cy, lng: cx };
+}
+
 export default function DisasterAreaManagementPage({
   initialData = EMPTY_MANAGEMENT_DATA,
 }: { initialData?: ManagementData } = {}) {
-  // ====== Data placeholder: Replace EMPTY_MANAGEMENT_DATA with data from the API once the backend is ready ======
-  // e.g.: const [managementData, setManagementData] = useState(EMPTY_MANAGEMENT_DATA);
-  //       useEffect(() => { fetch('/api/management').then(res => res.json()).then(setManagementData); }, []);
-  const managementData = initialData; // Using placeholder data for frontend development.
-
+  // ====== Disaster areas state ======
+  const [areas, setAreas] = useState<Area[]>(initialData.areas);
+  const [allDisasterAreas, setAllDisasterAreas] = useState<any[]>([]); // Save complete disaster area data
   const [selectedAreaId, setSelectedAreaId] = useState<string>(
-    () => managementData.areas[0]?.id ?? ""
+    () => initialData.areas[0]?.id ?? ""
   );
 
-  const areas = managementData.areas;
-  const areaDetails = managementData.areaDetails;
-  const verifiedDevices = managementData.verifiedDevices;
+  const areaDetails = initialData.areaDetails;
+  const verifiedDevices = initialData.verifiedDevices;
 
   // ====== Map container: Leave empty, will integrate with Map SDK in the future ======
   const mapRef = useRef<HTMLDivElement | null>(null);
@@ -79,6 +141,14 @@ export default function DisasterAreaManagementPage({
   const [mapAction, setMapAction] = useState<string>('show'); // 'show' | 'clean_and_edit' 
   const [disasterAreaName, setDisasterAreaName] = useState<string>("");
   const [disasterAreaDescription, setDisasterAreaDescription] = useState<string>("");
+  const [mapRefreshKey, setMapRefreshKey] = useState(0);
+  
+  // Map center and zoom state
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | undefined>(undefined);
+  const [mapZoom, setMapZoom] = useState<number | undefined>(undefined);
+  
+  // Selected disaster area details
+  const [selectedAreaDetails, setSelectedAreaDetails] = useState<any>(null);
   
   // Notification system state
   const [notification, setNotification] = useState<{
@@ -119,6 +189,45 @@ export default function DisasterAreaManagementPage({
     return null;
   };
 
+  // Function to fetch disaster areas
+  const fetchDisasterAreas = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/disaster_areas`,
+        {
+          headers: {
+            'Authorization': `Bearer ${getTokenFromCookie()}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Save complete disaster area data
+      setAllDisasterAreas(data);
+      
+      // Convert API response format to Area format used by component
+      const transformedAreas: Area[] = data.map((item: any) => ({
+        id: item.id,
+        name: item.title,
+        status: mapApiStatusToAreaStatus(item.status),
+      }));
+
+      setAreas(transformedAreas);
+      
+      // If there are disaster areas and none is currently selected, select the first one
+      if (transformedAreas.length > 0 && !selectedAreaId) {
+        setSelectedAreaId(transformedAreas[0].id);
+      }
+    } catch (error) {
+      console.error('Error fetching disaster areas:', error);
+      showNotification('error', 'Failed to load disaster areas');
+    }
+  };
 
   function createDisasterArea() {
 
@@ -163,6 +272,9 @@ export default function DisasterAreaManagementPage({
       setDisasterAreaName("");
       setDisasterAreaDescription("");
       setTempMapFeatures([]);
+      
+      // Re-fetch disaster area list to update display
+      fetchDisasterAreas();
     })
     .catch(error => {
       console.error('Error creating disaster area:', error);
@@ -170,6 +282,10 @@ export default function DisasterAreaManagementPage({
     });
   }
 
+  // ====== Fetch disaster areas from API on component mount ======
+  useEffect(() => {
+    fetchDisasterAreas();
+  }, []);
   
   useEffect(() => {
     // TODO[map]: Initialize the map here, e.g.:
@@ -190,10 +306,58 @@ export default function DisasterAreaManagementPage({
     // TODO[map]: Activate "add point" mode (click on the map to place a point)
   };
 
-  // ====== Switch area: In the future, fetch area details/device list from the backend and then setState ======
+  // ====== Switch area: Find area details from local data and update map ======
   const selectArea = (id: string) => {
+    // Confirm clearing existing markers and text labels before switching
+    const hasExistingData = (mapMarkersMemory.length > 0 || tempMapFeatures.length > 0 || textLabelsMemory.length > 0 || tempTextLabels.length > 0);
+    if (hasExistingData) {
+      const ok = typeof window !== 'undefined' ? window.confirm('Switching disaster areas will clear current markers and text, continue?') : true;
+      if (!ok) return;
+    }
+
     setSelectedAreaId(id);
-    // TODO[backend]: In the future, call the API here based on the area id to update area details and device list.
+    
+    // Find selected disaster area from loaded complete data
+    const areaData = allDisasterAreas.find(area => area.id === id);
+    
+    if (!areaData) {
+      console.warn('Area not found in local data:', id);
+      return;
+    }
+    
+    setSelectedAreaDetails(areaData);
+    
+    // If there's boundary data, calculate center point and move map
+    if (areaData.boundary && areaData.boundary.coordinates) {
+      const center = calculatePolygonCenter(areaData.boundary.coordinates);
+      setMapCenter(center);
+      setMapZoom(13);
+      
+      // Convert boundary data to GeoJSON Feature format
+      const feature = {
+        id: areaData.boundary.gid || areaData.id,
+        type: 'Feature',
+        geometry: {
+          type: areaData.boundary.type,
+          coordinates: areaData.boundary.coordinates
+        },
+        properties: {
+          mode: 'polygon',
+          color: '#ff3b30'
+        }
+      };
+      
+      // Display on map (if not in edit mode)
+      if (mapAction === 'show') {
+        // Clear all text labels when switching areas
+        setTextLabelsMemory([]);
+        setTempTextLabels([]);
+        // Replace existing features with the selected area's feature
+        setMapMarkersMemory([feature]);
+        setTempMapFeatures([feature]);
+        setMapRefreshKey(mapRefreshKey + 1);
+      }
+    }
   };
 
   return (
@@ -364,9 +528,9 @@ export default function DisasterAreaManagementPage({
                     <TextIcon />
                   </ToolbarButton>
 
-                  <ToolbarButton label="计数统计" onClick={() => {
+                  <ToolbarButton label="Count Statistics" onClick={() => {
                     // TODO: Implement statistics counting functionality
-                    showNotification('info', '计数统计功能即将推出');
+                    showNotification('info', 'Count statistics feature coming soon');
                   }}>
                     <ChartIcon />
                   </ToolbarButton>
@@ -390,6 +554,7 @@ export default function DisasterAreaManagementPage({
           <div ref={mapRef} id="map-container" className={styles.mapSurface} >
 
             <Map 
+              key={mapRefreshKey}
               editMode={editMode} 
               mapMode={mapAction === 'clean_and_edit' || editMode !== 'view' ? 'original' : 'heatmap'} 
               getFeatures={() => tempMapFeatures}
@@ -398,6 +563,8 @@ export default function DisasterAreaManagementPage({
               setTextLabels={(labels) => setTempTextLabels(labels)}
               suppressTextLabels={mapAction === 'clean_and_edit'}
               limitToolsTo={mapAction === 'clean_and_edit' ? ['polygon','rectangle','circle','freehand','static','select'] : undefined}
+              mapCenter={mapCenter}
+              mapZoom={mapZoom}
             />
 
           </div>
