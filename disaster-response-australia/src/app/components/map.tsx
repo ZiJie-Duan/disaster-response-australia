@@ -343,12 +343,15 @@ export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode
         safeSetMode(desired);
       }
     } else if (editMode === 'text') {
-      // In text mode, completely stop TerraDraw to avoid event interception
+      // Keep TerraDraw running and switch to static to keep drawings visible
       try {
-        drawRef.current.stop();
+        if (!drawRef.current.enabled) {
+          drawRef.current.start();
+        }
       } catch (e) {
-        console.error("Error stopping TerraDraw:", e);
+        console.error("Error starting TerraDraw:", e);
       }
+      safeSetMode('static');
     }
   };
 

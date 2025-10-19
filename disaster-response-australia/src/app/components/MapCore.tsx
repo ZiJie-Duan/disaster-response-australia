@@ -504,8 +504,9 @@ export default function MapCore({
           safeSetMode(activeDrawMode);
         }
       } else if (mode === 'text') {
-        // Stop TerraDraw to avoid intercepting events
-        try { drawRef.current.stop(); } catch {}
+        // Keep TerraDraw running and switch to static so drawings remain visible
+        try { drawRef.current.start(); } catch {}
+        safeSetMode('static');
       }
     } catch (error) {
       onError?.(error as Error, 'modeChange');
