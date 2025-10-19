@@ -99,6 +99,7 @@ export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode
   const isAddingTextRef = useRef<boolean>(false);
   const isDeletingTextRef = useRef<boolean>(false);
   const TextOverlayClassRef = useRef<any>(null);
+  const overlayViewRef = useRef<google.maps.OverlayView | null>(null);
   
   const [activeMode, setActiveMode] = useState<ModeId>('point');
   const [resizingEnabled, setResizingEnabled] = useState<boolean>(false);
@@ -648,8 +649,15 @@ export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode
 
         // Map click event - for adding text labels
         mapClickListenerRef.current = map.addListener("click", (e: google.maps.MapMouseEvent) => {
-          // Use ref to access latest state
-          if (isAddingTextRef.current && e.latLng) {
+          // 在文本模式下，允许在 TerraDraw 图形上放置文字：
+          // 我们通过 DOM 命中检测来避免 Google Maps 将点击吞给矢量层
+          if (editMode === 'text' && isAddingTextRef.current && e.latLng) {
+            try {
+              const target = (e.domEvent?.target as HTMLElement | undefined);
+              // 只要是地图容器或 TerraDraw 画布/矢量上的点击，都允许放置文字
+              // 不再阻止在图形上方添加
+              // 若未来需要更细控制，可在此基于 className 进行白名单判断
+            } catch {}
             const text = prompt("Enter text label content:");
             if (text && text.trim()) {
               const newLabel: TextLabel = {
@@ -674,10 +682,10 @@ export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode
               setTextLabels([...currentLabels, newLabel]);
             }
             
-            // Exit add mode
-            setIsAddingText(false);
-            isAddingTextRef.current = false;
-            map.setOptions({ draggableCursor: null });
+            // 保持添加模式，以便连续添加；如果希望单次添加后退出，可恢复以下三行
+            // setIsAddingText(false);
+            // isAddingTextRef.current = false;
+            // map.setOptions({ draggableCursor: null });
           }
         });
 
@@ -925,6 +933,16 @@ export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode
           });
         });
 
+        // Prepare a lightweight OverlayView for pixel<->latLng conversions used by DOM-level clicks
+        try {
+          const overlayView = new google.maps.OverlayView();
+          overlayView.onAdd = () => {};
+          overlayView.draw = () => {};
+          overlayView.onRemove = () => {};
+          overlayView.setMap(map);
+          overlayViewRef.current = overlayView;
+        } catch {}
+
       } catch (e) {
         console.error("Error loading Google Maps API:", e);
       }
@@ -946,6 +964,12 @@ export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode
       // Cleanup text overlays
       textOverlaysRef.current.forEach(overlay => overlay.setMap(null));
       textOverlaysRef.current.clear();
+
+      // Cleanup overlay view
+      if (overlayViewRef.current) {
+        try { overlayViewRef.current.setMap(null as any); } catch {}
+        overlayViewRef.current = null;
+      }
 
       // Cleanup event listeners
       if (projectionListener) {
@@ -1252,7 +1276,49 @@ export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode
           minHeight: 0,
           position: 'relative'
         }}
-      />
+      >
+        {editMode === 'text' && isAddingText && (
+          <div
+            onClick={(e) => {
+              // 使用 OverlayView 将像素转换为经纬度
+              if (!overlayViewRef.current || !mapRef.current) return;
+              const projection = overlayViewRef.current.getProjection && overlayViewRef.current.getProjection();
+              if (!projection) return;
+              const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+              try {
+                const latLng = projection.fromContainerPixelToLatLng(new google.maps.Point(x, y));
+                if (!latLng) return;
+                const text = prompt("Enter text label content:");
+                if (text && text.trim()) {
+                  const newLabel: TextLabel = {
+                    id: crypto.randomUUID(),
+                    position: { lat: latLng.lat(), lng: latLng.lng() },
+                    text: text.trim()
+                  };
+                  const overlay = createTextOverlay(newLabel, TextOverlayClassRef.current);
+                  if (overlay) {
+                    textOverlaysRef.current.set(newLabel.id, overlay);
+                    setTimeout(() => { overlay.setInteractive(true); }, 100);
+                  }
+                  const currentLabels = getTextLabels();
+                  setTextLabels([...currentLabels, newLabel]);
+                }
+              } catch {}
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 5,
+              background: 'transparent',
+              cursor: 'crosshair',
+            }}
+          />
+        )}
+      </div>
       
       {/* Hidden file input */}
       <input
