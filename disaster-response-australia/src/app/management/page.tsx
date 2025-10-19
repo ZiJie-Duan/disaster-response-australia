@@ -347,16 +347,16 @@ export default function DisasterAreaManagementPage({
         }
       };
       
-      // Display on map (if not in edit mode)
-      if (mapAction === 'show') {
-        // Clear all text labels when switching areas
-        setTextLabelsMemory([]);
-        setTempTextLabels([]);
-        // Replace existing features with the selected area's feature
-        setMapMarkersMemory([feature]);
-        setTempMapFeatures([feature]);
-        setMapRefreshKey(mapRefreshKey + 1);
-      }
+      // Clear all text labels when switching areas
+      setEditMode('view');
+      setMapAction('show');
+      // Clear all text labels when switching areas
+      setTextLabelsMemory([]);
+      setTempTextLabels([]);
+      // Replace existing features with the selected area's feature
+      setMapMarkersMemory([feature]);
+      setTempMapFeatures([feature]);
+      setMapRefreshKey(mapRefreshKey + 1);
     }
   };
 
