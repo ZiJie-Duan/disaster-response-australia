@@ -193,7 +193,7 @@ export default function DisasterAreaManagementPage({
   const fetchDisasterAreas = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/disaster_areas`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/disaster_areas?status=active`,
         {
           headers: {
             'Authorization': `Bearer ${getTokenFromCookie()}`,
@@ -373,8 +373,10 @@ export default function DisasterAreaManagementPage({
     if (!ok) return;
 
     try {
+      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/disaster_areas/${selectedAreaId}`;
+      console.debug('Resolving disaster area via API', { url, selectedAreaId });
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/disaster_areas/${selectedAreaId}`,
+        url,
         {
           method: 'PATCH',
           headers: {
@@ -389,11 +391,9 @@ export default function DisasterAreaManagementPage({
         const text = await response.text().catch(() => '');
         throw new Error(`HTTP error! status: ${response.status} ${text}`);
       }
-
       showNotification('success', 'Disaster area resolved successfully');
-      if (typeof window !== 'undefined') {
-        window.location.reload();
-      }
+      // Refresh local list instead of full page reload to avoid clearing Network logs
+      await fetchDisasterAreas();
     } catch (error) {
       console.error('Error resolving disaster area:', error);
       showNotification('error', 'Failed to resolve disaster area');
@@ -684,7 +684,7 @@ function ToolbarButton({
       : styles.toolbarBtn;
 
   return (
-    <button className={buttonClass} onClick={onClick} disabled={disabled} aria-disabled={disabled}>
+    <button type="button" className={buttonClass} onClick={onClick} disabled={disabled} aria-disabled={disabled}>
       <span className={styles.toolbarIcon}>{children}</span>
       <span>{label}</span>
     </button>
