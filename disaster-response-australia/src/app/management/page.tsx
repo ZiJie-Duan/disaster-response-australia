@@ -147,6 +147,11 @@ export default function DisasterAreaManagementPage({
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | undefined>(undefined);
   const [mapZoom, setMapZoom] = useState<number | undefined>(undefined);
   
+  // Survivor reports state
+  const [showSurvivorReports, setShowSurvivorReports] = useState(false);
+  const [survivorReports, setSurvivorReports] = useState<any[]>([]);
+  const [loadingReports, setLoadingReports] = useState(false);
+  
   // Selected disaster area details
   const [selectedAreaDetails, setSelectedAreaDetails] = useState<any>(null);
   
@@ -281,6 +286,35 @@ export default function DisasterAreaManagementPage({
       showNotification('error', 'Failed to create disaster area. Please ensure the shape is closed and has no intersecting edges');
     });
   }
+
+  // ====== Fetch survivor reports from API ======
+  const fetchSurvivorReports = async () => {
+    setLoadingReports(true);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/survivor_reports`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${getTokenFromCookie()}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch survivor reports: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setSurvivorReports(data);
+    } catch (error) {
+      console.error('Error fetching survivor reports:', error);
+      showNotification('error', 'Failed to load survivor reports');
+      setSurvivorReports([]);
+    } finally {
+      setLoadingReports(false);
+    }
+  };
 
   // ====== Fetch disaster areas from API on component mount ======
   useEffect(() => {
@@ -575,6 +609,13 @@ export default function DisasterAreaManagementPage({
                     <ChartIcon />
                   </ToolbarButton>
 
+                  <ToolbarButton label="Help Reports" onClick={() => {
+                    setShowSurvivorReports(true);
+                    fetchSurvivorReports();
+                  }}>
+                    <SOSIcon />
+                  </ToolbarButton>
+
                   <ToolbarButton label="Resolve Area" onClick={handleResolveClick} disabled={!selectedAreaId}>
                     <CheckIcon />
                   </ToolbarButton>
@@ -659,6 +700,15 @@ export default function DisasterAreaManagementPage({
           </div>
         </div>
       </section>
+
+      {/* Survivor Reports Modal */}
+      {showSurvivorReports && (
+        <SurvivorReportsModal
+          reports={survivorReports}
+          loading={loadingReports}
+          onClose={() => setShowSurvivorReports(false)}
+        />
+      )}
     </div>
   );
 }
@@ -771,6 +821,420 @@ function CheckIcon() {
   );
 }
 
+function SOSIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+      <path d="M8 10h2m4 0h2M8 14h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function formatDetailValue(value: string | number | undefined | null): string | number {
   return value === undefined || value === null || value === "" ? "—" : value;
+}
+
+/* ============ Survivor Reports Modal Component ============ */
+
+interface SurvivorReport {
+  id: string;
+  title: string | null;
+  description: string | null;
+  level: string | null;
+  location: {
+    type: string;
+    coordinates: number[];
+  };
+  address: string | null;
+  created_at: string;
+}
+
+function SurvivorReportsModal({
+  reports,
+  loading,
+  onClose,
+}: {
+  reports: SurvivorReport[];
+  loading: boolean;
+  onClose: () => void;
+}) {
+  const [localReports, setLocalReports] = useState<SurvivorReport[]>(reports);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+
+  // Update local reports when props change
+  useEffect(() => {
+    setLocalReports(reports);
+  }, [reports]);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-AU', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const getLevelColor = (level: string | null) => {
+    switch (level?.toLowerCase()) {
+      case 'high':
+        return '#DC2626';
+      case 'medium':
+        return '#F59E0B';
+      case 'low':
+        return '#10B981';
+      default:
+        return '#6B7280';
+    }
+  };
+
+  const getLevelLabel = (level: string | null) => {
+    return level ? level.charAt(0).toUpperCase() + level.slice(1) : 'Unknown';
+  };
+
+  const getTokenFromCookie = (): string | null => {
+    if (typeof document === 'undefined') return null;
+
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'drau_id_token') {
+        return value;
+      }
+    }
+    return null;
+  };
+
+  const handleResolveReport = async (reportId: string) => {
+    // Confirm before deleting
+    const confirmed = window.confirm('Are you sure you want to resolve this help report? This action cannot be undone.');
+    if (!confirmed) return;
+
+    // Add to deleting set
+    setDeletingIds(prev => new Set(prev).add(reportId));
+
+    try {
+      const token = getTokenFromCookie();
+      if (!token) {
+        alert('Authentication information not found, please log in again');
+        return;
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/survivor_reports/${reportId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to resolve report: ${response.status}`);
+      }
+
+      // Remove from local list
+      setLocalReports(prev => prev.filter(report => report.id !== reportId));
+      
+      // Show success message (optional)
+      alert('Help report has been successfully resolved');
+    } catch (error) {
+      console.error('Error resolving survivor report:', error);
+      alert('Delete failed, please try again later');
+    } finally {
+      // Remove from deleting set
+      setDeletingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(reportId);
+        return newSet;
+      });
+    }
+  };
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000,
+        padding: '20px',
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          backgroundColor: 'white',
+          borderRadius: '12px',
+          width: '100%',
+          maxWidth: '900px',
+          maxHeight: '85vh',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Modal Header */}
+        <div
+          style={{
+            padding: '20px 24px',
+            borderBottom: '1px solid #E5E7EB',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#111827' }}>
+            Help Reports
+          </h2>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '28px',
+              cursor: 'pointer',
+              color: '#6B7280',
+              padding: '0',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '6px',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#F3F4F6';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Modal Content */}
+        <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <div
+                style={{
+                  display: 'inline-block',
+                  width: '40px',
+                  height: '40px',
+                  border: '4px solid #F3F4F6',
+                  borderTop: '4px solid #DC2626',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite',
+                }}
+              />
+              <p style={{ marginTop: '16px', color: '#6B7280' }}>Loading...</p>
+              <style>
+                {`
+                  @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                  }
+                `}
+              </style>
+            </div>
+          ) : localReports.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#6B7280' }}>
+              <p style={{ fontSize: '16px' }}>No help reports yet</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {localReports.map((report) => (
+                <div
+                  key={report.id}
+                  style={{
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    backgroundColor: '#FAFAFA',
+                    transition: 'box-shadow 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  {/* Report Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '600', color: '#111827' }}>
+                        {report.title || 'No Title'}
+                      </h3>
+                      <p style={{ margin: 0, fontSize: '13px', color: '#6B7280' }}>
+                        ID: {report.id}
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span
+                        style={{
+                          padding: '4px 12px',
+                          borderRadius: '12px',
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          color: 'white',
+                          backgroundColor: getLevelColor(report.level),
+                        }}
+                      >
+                        {getLevelLabel(report.level)}
+                      </span>
+                      <button
+                        onClick={() => handleResolveReport(report.id)}
+                        disabled={deletingIds.has(report.id)}
+                        style={{
+                          padding: '6px 14px',
+                          backgroundColor: deletingIds.has(report.id) ? '#9CA3AF' : '#10B981',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          cursor: deletingIds.has(report.id) ? 'not-allowed' : 'pointer',
+                          transition: 'background-color 0.2s',
+                          whiteSpace: 'nowrap',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!deletingIds.has(report.id)) {
+                            e.currentTarget.style.backgroundColor = '#059669';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!deletingIds.has(report.id)) {
+                            e.currentTarget.style.backgroundColor = '#10B981';
+                          }
+                        }}
+                      >
+                        {deletingIds.has(report.id) ? (
+                          <>
+                            <span style={{ 
+                              display: 'inline-block',
+                              width: '12px',
+                              height: '12px',
+                              border: '2px solid white',
+                              borderTop: '2px solid transparent',
+                              borderRadius: '50%',
+                              animation: 'spin 0.6s linear infinite',
+                            }} />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            ✓ Resolve
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Report Description */}
+                  {report.description && (
+                    <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#374151', lineHeight: '1.5' }}>
+                      {report.description}
+                    </p>
+                  )}
+
+                  {/* Report Details Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px' }}>
+                    {/* Location */}
+                    <div>
+                      <p style={{ margin: '0 0 4px 0', fontSize: '12px', color: '#6B7280', fontWeight: '500' }}>
+                        📍 Location
+                      </p>
+                      {report.address ? (
+                        <p style={{ margin: 0, fontSize: '14px', color: '#111827' }}>
+                          {report.address}
+                        </p>
+                      ) : (
+                        <p style={{ margin: 0, fontSize: '13px', color: '#374151', fontFamily: 'monospace' }}>
+                          {report.location.coordinates[1].toFixed(6)}, {report.location.coordinates[0].toFixed(6)}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Time */}
+                    <div>
+                      <p style={{ margin: '0 0 4px 0', fontSize: '12px', color: '#6B7280', fontWeight: '500' }}>
+                        🕒 Time
+                      </p>
+                      <p style={{ margin: 0, fontSize: '14px', color: '#111827' }}>
+                        {formatDate(report.created_at)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Coordinates (always show) */}
+                  <div style={{ marginTop: '12px', padding: '8px', backgroundColor: '#F3F4F6', borderRadius: '4px' }}>
+                    <p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>
+                      Coordinates: {report.location.coordinates[1].toFixed(6)}°N, {report.location.coordinates[0].toFixed(6)}°E
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Modal Footer */}
+        <div
+          style={{
+            padding: '16px 24px',
+            borderTop: '1px solid #E5E7EB',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            backgroundColor: '#F9FAFB',
+            borderBottomLeftRadius: '12px',
+            borderBottomRightRadius: '12px',
+          }}
+        >
+          <span style={{ fontSize: '14px', color: '#6B7280' }}>
+            Total: {localReports.length} help reports
+          </span>
+          <button
+            onClick={onClose}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#DC2626',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#B91C1C';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#DC2626';
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }

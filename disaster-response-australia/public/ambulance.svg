@@ -1,0 +1,57 @@
+<svg width="500" height="600" viewBox="0 0 500 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Ambulance body -->
+  <rect x="80" y="250" width="340" height="200" rx="20" fill="#FFFFFF" stroke="#333333" stroke-width="4"/>
+  
+  <!-- Ambulance cab -->
+  <rect x="80" y="180" width="120" height="70" rx="10" fill="#FFFFFF" stroke="#333333" stroke-width="4"/>
+  
+  <!-- Windshield -->
+  <rect x="90" y="190" width="50" height="50" rx="5" fill="#87CEEB" stroke="#333333" stroke-width="2"/>
+  
+  <!-- Side window -->
+  <rect x="150" y="190" width="40" height="50" rx="5" fill="#87CEEB" stroke="#333333" stroke-width="2"/>
+  
+  <!-- Rear windows -->
+  <rect x="320" y="270" width="80" height="60" rx="5" fill="#87CEEB" stroke="#333333" stroke-width="2"/>
+  
+  <!-- Red stripe -->
+  <rect x="80" y="320" width="340" height="40" fill="#DC2626"/>
+  
+  <!-- Red cross on side -->
+  <rect x="220" y="280" width="60" height="20" rx="3" fill="#DC2626"/>
+  <rect x="240" y="260" width="20" height="60" rx="3" fill="#DC2626"/>
+  
+  <!-- Front wheel -->
+  <circle cx="140" cy="450" r="40" fill="#333333"/>
+  <circle cx="140" cy="450" r="25" fill="#666666"/>
+  <circle cx="140" cy="450" r="12" fill="#999999"/>
+  
+  <!-- Rear wheel -->
+  <circle cx="360" cy="450" r="40" fill="#333333"/>
+  <circle cx="360" cy="450" r="25" fill="#666666"/>
+  <circle cx="360" cy="450" r="12" fill="#999999"/>
+  
+  <!-- Headlights -->
+  <circle cx="75" cy="240" r="8" fill="#FFD700"/>
+  
+  <!-- Light bar on top -->
+  <rect x="180" y="150" width="140" height="25" rx="12" fill="#DC2626"/>
+  <rect x="190" y="157" width="30" height="11" rx="5" fill="#FF6B6B"/>
+  <rect x="280" y="157" width="30" height="11" rx="5" fill="#FF6B6B"/>
+  
+  <!-- Door outline -->
+  <line x1="280" y1="250" x2="280" y2="450" stroke="#333333" stroke-width="3"/>
+  
+  <!-- Door handle -->
+  <rect x="265" y="340" width="10" height="3" rx="1.5" fill="#333333"/>
+  
+  <!-- Plus symbol on rear -->
+  <rect x="340" y="385" width="40" height="10" rx="2" fill="#FFFFFF"/>
+  <rect x="355" y="370" width="10" height="40" rx="2" fill="#FFFFFF"/>
+  
+  <!-- Ground shadow -->
+  <ellipse cx="250" cy="495" rx="200" ry="20" fill="#000000" opacity="0.2"/>
+  
+  <!-- Text "AMBULANCE" (mirrored for front view) -->
+  <text x="250" y="410" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#DC2626" text-anchor="middle">AMBULANCE</text>
+</svg>

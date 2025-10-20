@@ -31,13 +31,13 @@ const EMPTY_CONSOLE_DATA: ConsoleData = {
 export default function RescuerConsolePage({
   initialData = EMPTY_CONSOLE_DATA,
 }: { initialData?: ConsoleData } = {}) {
-  // TODO: 等待后台打通后，把这里替换成真实的请求结果（参考下面 ConsoleData 的结构）。
-  // 例如：
+  // TODO: After backend integration, replace this with real API request results (refer to ConsoleData structure below).
+  // For example:
   //   const [consoleData, setConsoleData] = useState(EMPTY_CONSOLE_DATA);
   //   useEffect(() => {
   //     fetch('/api/console').then((res) => res.json()).then(setConsoleData);
   //   }, []);
-  const consoleData = initialData; // 暂时使用占位数据，便于前端联调。
+  const consoleData = initialData; // Temporarily using placeholder data for frontend development.
   const [selectedZone, setSelectedZone] = useState(() => consoleData.zones[0] ?? '');
 
   const zones = consoleData.zones;

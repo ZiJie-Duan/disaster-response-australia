@@ -353,7 +353,7 @@ export default function MapCore({
           data: [],
           map: mapRef.current,
           radius: 25,
-          opacity: 0.7,
+          opacity: 0.2,
         });
       }
 
@@ -631,7 +631,7 @@ export default function MapCore({
           }
         });
 
-        // Heatmap 边界变更监听：在用户静止1秒后再触发
+        // Heatmap boundary change listener: triggers after user is idle for 1 second
         idleListenerRef.current = map.addListener("idle", () => {
           if (heatmapFetchTimeoutRef.current) {
             clearTimeout(heatmapFetchTimeoutRef.current);
@@ -646,7 +646,7 @@ export default function MapCore({
           }, 1000);
         });
 
-        // 用户交互期间取消待触发的热力图数据拉取
+        // Cancel pending heatmap data fetch during user interaction
         const cancelPendingHeatmapFetch = () => {
           if (heatmapFetchTimeoutRef.current) {
             clearTimeout(heatmapFetchTimeoutRef.current);

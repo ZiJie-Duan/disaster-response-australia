@@ -3,20 +3,20 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# 安装 pnpm
+# Install pnpm
 RUN npm install -g pnpm
 
-# 设置构建环境变量（前端可见）
+# Set build environment variables (visible to frontend)
 ARG NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 ENV NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
 ARG NEXT_PUBLIC_API_BASE_URL
 ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
 
-# 复制依赖文件并安装依赖
+# Copy dependency files and install dependencies
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
-# 复制源码并构建
+# Copy source code and build
 COPY . .
 RUN pnpm build
 
@@ -27,7 +27,7 @@ WORKDIR /app
 
 RUN npm install -g pnpm
 
-# 复制必要文件
+# Copy necessary files
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
@@ -35,5 +35,5 @@ COPY --from=builder /app/node_modules ./node_modules
 
 EXPOSE 3000
 
-# 运行 Next.js
+# Run Next.js
 CMD ["pnpm", "start"]
