@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader } from "@googlemaps/js-api-loader";
+import Image from "next/image";
 
 export default function EmergencyDetails() {
   const router = useRouter();
@@ -188,8 +189,14 @@ export default function EmergencyDetails() {
   // Submit form
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!location.trim() || location === "None") {
-      alert("Location is required");
+    
+    // Validate latitude and longitude (required fields)
+    if (latitude === null || isNaN(latitude)) {
+      alert("Latitude is required");
+      return;
+    }
+    if (longitude === null || isNaN(longitude)) {
+      alert("Longitude is required");
       return;
     }
     
@@ -213,6 +220,24 @@ export default function EmergencyDetails() {
       className="min-h-screen"
       style={{ backgroundColor: "#0b1828", color: "#f8fafc" }}
     >
+      {/* Disaster Response Australia Header */}
+      <div 
+        className="w-full flex items-center justify-center gap-3 py-3 px-4 cursor-pointer hover:bg-opacity-80 transition-colors"
+        style={{ backgroundColor: "#1e293b" }}
+        onClick={() => router.push("/")}
+      >
+        <Image
+          src="/logo.svg"
+          alt="Disaster Response Australia Logo"
+          width={32}
+          height={32}
+          className="w-8 h-8"
+        />
+        <span className="text-white text-lg font-semibold">
+          Disaster Response Australia
+        </span>
+      </div>
+
       {/* Header */}
       <div
         className="w-full text-center py-4 text-2xl font-bold text-white px-6"
@@ -229,7 +254,7 @@ export default function EmergencyDetails() {
         {/* Location Field with Autocomplete */}
         <div>
           <label className="block mb-2 text-sm font-medium">
-            Location: <span className="text-red-500">(required)</span>
+            Location: <span className="text-gray-400">(optional)</span>
           </label>
           <div className="flex gap-2">
             <input
@@ -276,12 +301,15 @@ export default function EmergencyDetails() {
         {/* Latitude and Longitude */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block mb-2 text-sm font-medium">Latitude:</label>
+            <label className="block mb-2 text-sm font-medium">
+              Latitude: <span className="text-red-500">(required)</span>
+            </label>
             <input
               type="number"
               step="any"
               value={latitude || ""}
               onChange={(e) => handleLatitudeChange(e.target.value)}
+              required
               className="w-full px-3 py-5 rounded-md transition-all"
               style={{
                 backgroundColor: "#0f2238",
@@ -299,12 +327,15 @@ export default function EmergencyDetails() {
             />
           </div>
           <div>
-            <label className="block mb-2 text-sm font-medium">Longitude:</label>
+            <label className="block mb-2 text-sm font-medium">
+              Longitude: <span className="text-red-500">(required)</span>
+            </label>
             <input
               type="number"
               step="any"
               value={longitude || ""}
               onChange={(e) => handleLongitudeChange(e.target.value)}
+              required
               className="w-full px-3 py-5 rounded-md transition-all"
               style={{
                 backgroundColor: "#0f2238",

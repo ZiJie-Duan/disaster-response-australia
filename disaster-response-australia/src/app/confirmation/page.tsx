@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function Confirmation() {
+  const router = useRouter();
   const [time, setTime] = useState("");
 
   useEffect(() => {
@@ -16,6 +18,24 @@ export default function Confirmation() {
       className="min-h-screen"
       style={{ backgroundColor: "#0b1828" }}
     >
+      {/* Disaster Response Australia Header */}
+      <div 
+        className="w-full flex items-center justify-center gap-3 py-3 px-4 cursor-pointer hover:bg-opacity-80 transition-colors"
+        style={{ backgroundColor: "#1e293b" }}
+        onClick={() => router.push("/")}
+      >
+        <Image
+          src="/logo.svg"
+          alt="Disaster Response Australia Logo"
+          width={32}
+          height={32}
+          className="w-8 h-8"
+        />
+        <span className="text-white text-lg font-semibold">
+          Disaster Response Australia
+        </span>
+      </div>
+
       {/* Header */}
       <div
         className="w-full text-center py-4 text-2xl font-bold text-white"
