@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
@@ -47,13 +47,19 @@ export default function Confirmation() {
   const [isSubmitting, setIsSubmitting] = useState(true);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [reportId, setReportId] = useState<string | null>(null);
+  
+  // Use ref to prevent duplicate submissions (especially in React Strict Mode)
+  const hasSubmitted = useRef(false);
 
   useEffect(() => {
     // Get current time when component mounts
     setTime(new Date().toLocaleTimeString("en-GB"));
 
-    // Submit the emergency report
-    submitEmergencyReport();
+    // Submit the emergency report only once
+    if (!hasSubmitted.current) {
+      hasSubmitted.current = true;
+      submitEmergencyReport();
+    }
   }, []);
 
   const submitEmergencyReport = async () => {

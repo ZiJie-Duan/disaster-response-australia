@@ -526,7 +526,7 @@ export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode
       data: [],
       map: map,
       radius: 25,
-      opacity: 0.7,
+      opacity: 0.2,
     });
 
     setHeatmapLayer(heatmap);
