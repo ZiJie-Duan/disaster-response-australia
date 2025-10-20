@@ -153,19 +153,19 @@ export default function DashboardPage() {
           { isLogIn ? (
             <div className="flex items-center gap-3">
             <button
+              onClick={() => window.location.href = '/sos'}
+              className="rounded-xl border-2 border-red-500 bg-red-600 px-4 py-2 text-sm font-bold backdrop-blur hover:bg-red-700 transition-colors"
+              style={{ boxShadow: '0 4px 6px rgba(220, 38, 38, 0.3)' }}
+            >
+              🚨 Emergency SOS
+            </button>
+            <button
               onClick={() => {
                 window.location.href = "/management";
               }}
               className="rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur hover:bg-white/15"
             >
               Management
-            </button>
-            <button
-              onClick={() => window.location.href = '/sos'}
-              className="rounded-xl border-2 border-red-500 bg-red-600 px-4 py-2 text-sm font-bold backdrop-blur hover:bg-red-700 transition-colors"
-              style={{ boxShadow: '0 4px 6px rgba(220, 38, 38, 0.3)' }}
-            >
-              🚨 Emergency SOS
             </button>
             <button
               onClick={() => {
