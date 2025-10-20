@@ -858,6 +858,14 @@ function SurvivorReportsModal({
   loading: boolean;
   onClose: () => void;
 }) {
+  const [localReports, setLocalReports] = useState<SurvivorReport[]>(reports);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+
+  // Update local reports when props change
+  useEffect(() => {
+    setLocalReports(reports);
+  }, [reports]);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString('en-AU', {
@@ -884,6 +892,66 @@ function SurvivorReportsModal({
 
   const getLevelLabel = (level: string | null) => {
     return level ? level.charAt(0).toUpperCase() + level.slice(1) : 'Unknown';
+  };
+
+  const getTokenFromCookie = (): string | null => {
+    if (typeof document === 'undefined') return null;
+
+    const cookies = document.cookie.split(';');
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'drau_id_token') {
+        return value;
+      }
+    }
+    return null;
+  };
+
+  const handleResolveReport = async (reportId: string) => {
+    // Confirm before deleting
+    const confirmed = window.confirm('确定要解决此求救报告吗？此操作无法撤销。');
+    if (!confirmed) return;
+
+    // Add to deleting set
+    setDeletingIds(prev => new Set(prev).add(reportId));
+
+    try {
+      const token = getTokenFromCookie();
+      if (!token) {
+        alert('未找到认证信息，请重新登录');
+        return;
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/survivor_reports/${reportId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to resolve report: ${response.status}`);
+      }
+
+      // Remove from local list
+      setLocalReports(prev => prev.filter(report => report.id !== reportId));
+      
+      // Show success message (optional)
+      alert('求救报告已成功解决');
+    } catch (error) {
+      console.error('Error resolving survivor report:', error);
+      alert('删除失败，请稍后重试');
+    } finally {
+      // Remove from deleting set
+      setDeletingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(reportId);
+        return newSet;
+      });
+    }
   };
 
   return (
@@ -982,13 +1050,13 @@ function SurvivorReportsModal({
                 `}
               </style>
             </div>
-          ) : reports.length === 0 ? (
+          ) : localReports.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px', color: '#6B7280' }}>
               <p style={{ fontSize: '16px' }}>暂无求救报告</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {reports.map((report) => (
+              {localReports.map((report) => (
                 <div
                   key={report.id}
                   style={{
@@ -1015,18 +1083,68 @@ function SurvivorReportsModal({
                         ID: {report.id}
                       </p>
                     </div>
-                    <span
-                      style={{
-                        padding: '4px 12px',
-                        borderRadius: '12px',
-                        fontSize: '13px',
-                        fontWeight: '600',
-                        color: 'white',
-                        backgroundColor: getLevelColor(report.level),
-                      }}
-                    >
-                      {getLevelLabel(report.level)}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span
+                        style={{
+                          padding: '4px 12px',
+                          borderRadius: '12px',
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          color: 'white',
+                          backgroundColor: getLevelColor(report.level),
+                        }}
+                      >
+                        {getLevelLabel(report.level)}
+                      </span>
+                      <button
+                        onClick={() => handleResolveReport(report.id)}
+                        disabled={deletingIds.has(report.id)}
+                        style={{
+                          padding: '6px 14px',
+                          backgroundColor: deletingIds.has(report.id) ? '#9CA3AF' : '#10B981',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          cursor: deletingIds.has(report.id) ? 'not-allowed' : 'pointer',
+                          transition: 'background-color 0.2s',
+                          whiteSpace: 'nowrap',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!deletingIds.has(report.id)) {
+                            e.currentTarget.style.backgroundColor = '#059669';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!deletingIds.has(report.id)) {
+                            e.currentTarget.style.backgroundColor = '#10B981';
+                          }
+                        }}
+                      >
+                        {deletingIds.has(report.id) ? (
+                          <>
+                            <span style={{ 
+                              display: 'inline-block',
+                              width: '12px',
+                              height: '12px',
+                              border: '2px solid white',
+                              borderTop: '2px solid transparent',
+                              borderRadius: '50%',
+                              animation: 'spin 0.6s linear infinite',
+                            }} />
+                            处理中...
+                          </>
+                        ) : (
+                          <>
+                            ✓ Resolve
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   {/* Report Description */}
@@ -1091,7 +1209,7 @@ function SurvivorReportsModal({
           }}
         >
           <span style={{ fontSize: '14px', color: '#6B7280' }}>
-            共 {reports.length} 条求救报告
+            共 {localReports.length} 条求救报告
           </span>
           <button
             onClick={onClose}
