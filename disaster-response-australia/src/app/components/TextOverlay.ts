@@ -1,4 +1,4 @@
-// 这是一个工厂函数，等 google.maps 加载好以后再调用
+// This is a factory function, call it after google.maps is loaded
 export function createTextOverlayClass(googleMaps: typeof google.maps) {
     return class SimpleTextOverlay extends googleMaps.OverlayView {
       private position: google.maps.LatLng | google.maps.LatLngLiteral;
@@ -61,17 +61,17 @@ export function createTextOverlayClass(googleMaps: typeof google.maps) {
         this.div.style.whiteSpace = "nowrap";
         this.div.style.pointerEvents = this.isInteractive ? "auto" : "none";
         this.div.style.cursor = this.isInteractive ? "pointer" : "default";
-        this.div.style.zIndex = "10000"; // 提高 z-index 确保在最上层
+        this.div.style.zIndex = "10000"; // Increase z-index to ensure it's on top layer
         this.div.innerText = this.text;
         
-        // 添加点击事件
+        // Add click event
         if (this.onClick) {
           this.div.addEventListener('click', (e) => {
-            e.stopPropagation(); // 阻止事件冒泡到地图
+            e.stopPropagation(); // Prevent event bubbling to the map
             this.onClick?.(this.id);
           });
           
-          // 添加鼠标悬停效果
+          // Add mouse hover effect
           this.div.addEventListener('mouseenter', () => {
             if (this.isInteractive && this.div && !this.isSelected) {
               this.div.style.backgroundColor = 'rgba(0, 123, 255, 0.1)';
@@ -90,7 +90,7 @@ export function createTextOverlayClass(googleMaps: typeof google.maps) {
           });
         }
         
-        // 使用 floatPane 确保文字标注在最上层并且可以接收鼠标事件
+        // Use floatPane to ensure text annotations are on top layer and can receive mouse events
         const panes = this.getPanes();
         if (panes?.floatPane) {
           panes.floatPane.appendChild(this.div);
@@ -98,37 +98,37 @@ export function createTextOverlayClass(googleMaps: typeof google.maps) {
           panes?.overlayLayer.appendChild(this.div);
         }
         
-        // 添加缩放监听器
+        // Add zoom listener
         this.zoomListener = this.map.addListener('zoom_changed', () => {
           this.updateStyleBasedOnZoom();
         });
         
-        // 初始设置样式
+        // Initial style setup
         this.updateStyleBasedOnZoom();
       }
   
-      // 根据缩放级别更新样式
+      // Update style based on zoom level
       private updateStyleBasedOnZoom(): void {
         if (!this.div) return;
         
         const zoom = this.map.getZoom() || 10;
         
-        // 根据缩放级别调整字体大小
+        // Adjust font size based on zoom level
         let fontSize: number;
         let padding: string;
         let borderRadius: string;
         let opacity: number;
         
 
-        // 调整字体大小范围，确保可读性
+        // Adjust font size range to ensure readability
         fontSize = Math.max(12, Math.min(zoom, 20));
         padding = "4px 8px";
         borderRadius = "4px";
         
-        // 调整透明度计算，确保始终可见
+        // Adjust opacity calculation to ensure visibility
         opacity = Math.max(0.8, Math.min(0.1 * zoom - 0.2, 0.95));
 
-        // 降低最小缩放级别要求，在更多缩放级别下显示文字
+        // Lower minimum zoom level requirement to display text at more zoom levels
         if (zoom < 8) {
           this.div.style.display = "none";
         } else {
@@ -156,7 +156,7 @@ export function createTextOverlayClass(googleMaps: typeof google.maps) {
       }
   
       onRemove(): void {
-        // 清理缩放监听器
+        // Clean up zoom listener
         if (this.zoomListener) {
           googleMaps.event.removeListener(this.zoomListener);
           this.zoomListener = null;

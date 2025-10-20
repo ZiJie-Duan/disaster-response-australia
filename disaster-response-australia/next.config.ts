@@ -2,10 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   eslint: {
-    ignoreDuringBuilds: true,          // 忽略 ESLint 错误以便生产构建继续
+    ignoreDuringBuilds: true,          // Ignore ESLint errors to allow production build to continue
   },
   typescript: {
-    ignoreBuildErrors: true,           // （可选）忽略 TS 类型错误
+    ignoreBuildErrors: true,           // (Optional) Ignore TypeScript type errors
   }
 };
 

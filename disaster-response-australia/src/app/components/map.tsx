@@ -649,14 +649,14 @@ export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode
 
         // Map click event - for adding text labels
         mapClickListenerRef.current = map.addListener("click", (e: google.maps.MapMouseEvent) => {
-          // 在文本模式下，允许在 TerraDraw 图形上放置文字：
-          // 我们通过 DOM 命中检测来避免 Google Maps 将点击吞给矢量层
+          // In text mode, allow placing text on TerraDraw shapes:
+          // We use DOM hit detection to prevent Google Maps from consuming clicks on vector layers
           if (editMode === 'text' && isAddingTextRef.current && e.latLng) {
             try {
               const target = (e.domEvent?.target as HTMLElement | undefined);
-              // 只要是地图容器或 TerraDraw 画布/矢量上的点击，都允许放置文字
-              // 不再阻止在图形上方添加
-              // 若未来需要更细控制，可在此基于 className 进行白名单判断
+              // Allow text placement on any click on the map container or TerraDraw canvas/vectors
+              // No longer preventing text placement above shapes
+              // For more fine-grained control in the future, whitelist based on className can be implemented here
             } catch {}
             const text = prompt("Enter text label content:");
             if (text && text.trim()) {
@@ -682,7 +682,7 @@ export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode
               setTextLabels([...currentLabels, newLabel]);
             }
             
-            // 保持添加模式，以便连续添加；如果希望单次添加后退出，可恢复以下三行
+            // Keep add mode active for continuous adding; to exit after a single add, uncomment the three lines below
             // setIsAddingText(false);
             // isAddingTextRef.current = false;
             // map.setOptions({ draggableCursor: null });
@@ -697,7 +697,7 @@ export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode
           }
         });
 
-        // Load heatmap数据在用户静止1秒后再拉取，减少卡顿
+        // Load heatmap data after user is idle for 1 second to reduce lag
         map.addListener("idle", () => {
           if (heatmapFetchTimeoutRef.current) {
             clearTimeout(heatmapFetchTimeoutRef.current);
@@ -710,7 +710,7 @@ export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode
           }, 1000);
         });
 
-        // 用户开始交互时（拖拽/缩放/边界变化），取消等待中的热力图拉取
+        // When user starts interaction (drag/zoom/boundary change), cancel pending heatmap data fetch
         const cancelPendingHeatmapFetch = () => {
           if (heatmapFetchTimeoutRef.current) {
             clearTimeout(heatmapFetchTimeoutRef.current);
@@ -1280,7 +1280,7 @@ export default function TerraDrawAdvancedPage( { key, editMode = 'view', mapMode
         {editMode === 'text' && isAddingText && (
           <div
             onClick={(e) => {
-              // 使用 OverlayView 将像素转换为经纬度
+              // Use OverlayView to convert pixels to latitude and longitude
               if (!overlayViewRef.current || !mapRef.current) return;
               const projection = overlayViewRef.current.getProjection && overlayViewRef.current.getProjection();
               if (!projection) return;

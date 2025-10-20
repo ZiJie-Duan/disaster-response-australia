@@ -609,7 +609,7 @@ export default function DisasterAreaManagementPage({
                     <ChartIcon />
                   </ToolbarButton>
 
-                  <ToolbarButton label="求救报告" onClick={() => {
+                  <ToolbarButton label="Help Reports" onClick={() => {
                     setShowSurvivorReports(true);
                     fetchSurvivorReports();
                   }}>
@@ -909,7 +909,7 @@ function SurvivorReportsModal({
 
   const handleResolveReport = async (reportId: string) => {
     // Confirm before deleting
-    const confirmed = window.confirm('确定要解决此求救报告吗？此操作无法撤销。');
+    const confirmed = window.confirm('Are you sure you want to resolve this help report? This action cannot be undone.');
     if (!confirmed) return;
 
     // Add to deleting set
@@ -918,7 +918,7 @@ function SurvivorReportsModal({
     try {
       const token = getTokenFromCookie();
       if (!token) {
-        alert('未找到认证信息，请重新登录');
+        alert('Authentication information not found, please log in again');
         return;
       }
 
@@ -940,10 +940,10 @@ function SurvivorReportsModal({
       setLocalReports(prev => prev.filter(report => report.id !== reportId));
       
       // Show success message (optional)
-      alert('求救报告已成功解决');
+      alert('Help report has been successfully resolved');
     } catch (error) {
       console.error('Error resolving survivor report:', error);
-      alert('删除失败，请稍后重试');
+      alert('Delete failed, please try again later');
     } finally {
       // Remove from deleting set
       setDeletingIds(prev => {
@@ -995,7 +995,7 @@ function SurvivorReportsModal({
           }}
         >
           <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 'bold', color: '#111827' }}>
-            求救报告
+            Help Reports
           </h2>
           <button
             onClick={onClose}
@@ -1040,7 +1040,7 @@ function SurvivorReportsModal({
                   animation: 'spin 1s linear infinite',
                 }}
               />
-              <p style={{ marginTop: '16px', color: '#6B7280' }}>加载中...</p>
+              <p style={{ marginTop: '16px', color: '#6B7280' }}>Loading...</p>
               <style>
                 {`
                   @keyframes spin {
@@ -1052,7 +1052,7 @@ function SurvivorReportsModal({
             </div>
           ) : localReports.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px', color: '#6B7280' }}>
-              <p style={{ fontSize: '16px' }}>暂无求救报告</p>
+              <p style={{ fontSize: '16px' }}>No help reports yet</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -1077,7 +1077,7 @@ function SurvivorReportsModal({
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                     <div style={{ flex: 1 }}>
                       <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '600', color: '#111827' }}>
-                        {report.title || '无标题'}
+                        {report.title || 'No Title'}
                       </h3>
                       <p style={{ margin: 0, fontSize: '13px', color: '#6B7280' }}>
                         ID: {report.id}
@@ -1136,7 +1136,7 @@ function SurvivorReportsModal({
                               borderRadius: '50%',
                               animation: 'spin 0.6s linear infinite',
                             }} />
-                            处理中...
+                            Processing...
                           </>
                         ) : (
                           <>
@@ -1159,7 +1159,7 @@ function SurvivorReportsModal({
                     {/* Location */}
                     <div>
                       <p style={{ margin: '0 0 4px 0', fontSize: '12px', color: '#6B7280', fontWeight: '500' }}>
-                        📍 位置
+                        📍 Location
                       </p>
                       {report.address ? (
                         <p style={{ margin: 0, fontSize: '14px', color: '#111827' }}>
@@ -1175,7 +1175,7 @@ function SurvivorReportsModal({
                     {/* Time */}
                     <div>
                       <p style={{ margin: '0 0 4px 0', fontSize: '12px', color: '#6B7280', fontWeight: '500' }}>
-                        🕒 时间
+                        🕒 Time
                       </p>
                       <p style={{ margin: 0, fontSize: '14px', color: '#111827' }}>
                         {formatDate(report.created_at)}
@@ -1186,7 +1186,7 @@ function SurvivorReportsModal({
                   {/* Coordinates (always show) */}
                   <div style={{ marginTop: '12px', padding: '8px', backgroundColor: '#F3F4F6', borderRadius: '4px' }}>
                     <p style={{ margin: 0, fontSize: '12px', color: '#6B7280' }}>
-                      经纬度: {report.location.coordinates[1].toFixed(6)}°N, {report.location.coordinates[0].toFixed(6)}°E
+                      Coordinates: {report.location.coordinates[1].toFixed(6)}°N, {report.location.coordinates[0].toFixed(6)}°E
                     </p>
                   </div>
                 </div>
@@ -1209,7 +1209,7 @@ function SurvivorReportsModal({
           }}
         >
           <span style={{ fontSize: '14px', color: '#6B7280' }}>
-            共 {localReports.length} 条求救报告
+            Total: {localReports.length} help reports
           </span>
           <button
             onClick={onClose}
@@ -1231,7 +1231,7 @@ function SurvivorReportsModal({
               e.currentTarget.style.backgroundColor = '#DC2626';
             }}
           >
-            关闭
+            Close
           </button>
         </div>
       </div>

@@ -1,210 +1,210 @@
 # 🚨 Emergency SOS System - Restored & Updated
 
-## ✅ 已完成的工作
+## ✅ Completed Work
 
-### 1. **重新创建三个SOS页面**
+### 1. **Recreated Three SOS Pages**
 
-#### 📱 `/sos` - Emergency SOS 入口页面
-- 深蓝色背景 (#0b1828)
-- 醒目的红色 "HELP!" 圆形按钮 (14rem × 14rem)
-- 白色粗边框和立体阴影效果
-- 按压动画效果
-- 点击跳转到 `/userLogin`
+#### 📱 `/sos` - Emergency SOS Entry Page
+- Deep blue background (#0b1828)
+- Eye-catching red "HELP!" circular button (14rem × 14rem)
+- White thick border and 3D shadow effect
+- Press animation effect
+- Click to navigate to `/userLogin`
 
-#### 📋 `/userLogin` - Emergency Details 表单页面
-**核心功能：**
-- ✅ Google Maps 地图集成
-- ✅ **Google Places Autocomplete** 智能地址搜索
-- ✅ **双向协同机制**：
-  - 地址 → 经纬度：选择地址自动获取坐标
-  - 经纬度 → 地址：修改坐标自动更新地址（500ms防抖）
-- ✅ GPS自动定位功能
-- ✅ 紧急程度选择 (High/Medium/Low)
-- ✅ 标题和描述字段
+#### 📋 `/userLogin` - Emergency Details Form Page
+**Core Features:**
+- ✅ Google Maps integration
+- ✅ **Google Places Autocomplete** smart address search
+- ✅ **Two-way coordination mechanism**:
+  - Address → Coordinates: Select address to automatically get coordinates
+  - Coordinates → Address: Modify coordinates to automatically update address (500ms debounce)
+- ✅ GPS auto-location function
+- ✅ Emergency level selection (High/Medium/Low)
+- ✅ Title and description fields
 
-**表单字段：**
-1. Location (必填) - Google Places Autocomplete搜索框
-2. Latitude (自动/手动)
-3. Longitude (自动/手动)
-4. Urgency (下拉选择)
-5. Title (可选)
-6. Description (可选)
+**Form Fields:**
+1. Location (required) - Google Places Autocomplete search box
+2. Latitude (automatic/manual)
+3. Longitude (automatic/manual)
+4. Urgency (dropdown selection)
+5. Title (optional)
+6. Description (optional)
 
-#### ✅ `/confirmation` - 救援确认页面
-- "Rescue on the way" 顶部标题
-- "Help is coming" 主标题
-- 确认信息：救援队已收到警报
-- 救护车SVG图示
-- 时间戳显示 (24小时制)
+#### ✅ `/confirmation` - Rescue Confirmation Page
+- "Rescue on the way" top title
+- "Help is coming" main title
+- Confirmation message: Rescue team has received the alert
+- Ambulance SVG illustration
+- Timestamp display (24-hour format)
 
-### 2. **救护车图片资源**
-- 创建了 `/public/ambulance.svg`
-- 专业的救护车矢量图，包含：
-  - 白色车身、红色条纹
-  - 红十字标志
-  - 车轮、车窗、车灯
-  - "AMBULANCE" 文字
-  - 地面阴影效果
+### 2. **Ambulance Image Resource**
+- Created `/public/ambulance.svg`
+- Professional ambulance vector graphic, including:
+  - White body, red stripes
+  - Red cross symbol
+  - Wheels, windows, lights
+  - "AMBULANCE" text
+  - Ground shadow effect
 
-### 3. **主页集成**
-在主页header添加了 "🚨 Emergency SOS" 按钮：
-- **位置**：
-  - 登录状态：Management 和 Sign Out 之间
-  - 未登录状态：Sign In / Sign Up 之前
-- **样式**：
-  - 红色背景 + 红色边框
-  - 阴影效果突出显示
-  - 悬停时颜色加深
-  - 醒目的 🚨 emoji
-- **功能**：点击跳转到 `/sos` 页面
+### 3. **Homepage Integration**
+Added "🚨 Emergency SOS" button to the main page header:
+- **Position**:
+  - Logged in: Between Management and Sign Out
+  - Not logged in: Before Sign In / Sign Up
+- **Style**:
+  - Red background + red border
+  - Shadow effect for emphasis
+  - Darker color on hover
+  - Eye-catching 🚨 emoji
+- **Function**: Click to navigate to `/sos` page
 
-### 4. **兼容性更新**
-- ✅ 修复了Map组件的props兼容性
-  - 使用 `editMode="view"` 替代 `editable={false}`
-  - 添加必需的 `key` prop (number类型)
-  - 添加 `getTextLabels` 和 `setTextLabels` props
-- ✅ 与你的最新代码变更兼容：
-  - Token验证机制
-  - authError状态管理
-  - 新的Map组件API
+### 4. **Compatibility Updates**
+- ✅ Fixed Map component props compatibility
+  - Using `editMode="view"` instead of `editable={false}`
+  - Added required `key` prop (number type)
+  - Added `getTextLabels` and `setTextLabels` props
+- ✅ Compatible with your latest code changes:
+  - Token verification mechanism
+  - authError state management
+  - New Map component API
 
-## 🎨 设计特点
+## 🎨 Design Features
 
-### 统一的视觉语言
-- **主题颜色**：
-  - 主红色: #E53935
-  - 浅红色: #f43f5e  
-  - 深蓝背景: #0b1828
-  - 文字红色: #FF0000
-  - 浅色文字: #f8fafc
+### Unified Visual Language
+- **Theme Colors**:
+  - Main red: #E53935
+  - Light red: #f43f5e  
+  - Deep blue background: #0b1828
+  - Text red: #FF0000
+  - Light text: #f8fafc
 
-### Google Places Autocomplete 深色主题
-已在 `globals.css` 中添加自定义样式：
-- 深蓝色下拉框背景
-- 红色文字高亮
-- 悬停效果
-- 圆角和阴影
+### Google Places Autocomplete Dark Theme
+Custom styles added in `globals.css`:
+- Deep blue dropdown background
+- Red text highlight
+- Hover effect
+- Rounded corners and shadows
 
-## 🚀 使用流程
+## 🚀 Usage Flow
 
-### 完整的紧急求救流程：
+### Complete Emergency Help Request Flow:
 
-1. **进入SOS系统**
-   - 从主页点击 "🚨 Emergency SOS"
-   - 或直接访问 `/sos`
+1. **Enter SOS System**
+   - Click "🚨 Emergency SOS" from homepage
+   - Or directly visit `/sos`
 
-2. **触发紧急警报**
-   - 点击巨大的 "HELP!" 按钮
-   - 自动跳转到详情填写页面
+2. **Trigger Emergency Alert**
+   - Click the large "HELP!" button
+   - Automatically redirected to details form page
 
-3. **填写紧急详情**
-   - **方式A**：在Location框输入地址关键词 → 从下拉列表选择
-   - **方式B**：点击 "📍 Auto" 按钮 → 自动获取当前位置
-   - **方式C**：手动输入经纬度 → 自动反向地理编码获取地址
-   - 选择紧急程度
-   - 可选填写标题和描述
+3. **Fill Emergency Details**
+   - **Method A**: Enter address keywords in Location field → Select from dropdown
+   - **Method B**: Click "📍 Auto" button → Automatically get current location
+   - **Method C**: Manually enter coordinates → Automatically reverse geocode to get address
+   - Select urgency level
+   - Optionally fill in title and description
 
-4. **提交并确认**
-   - 点击 "Send Alert" 提交
-   - 查看确认页面，记录发送时间
+4. **Submit and Confirm**
+   - Click "Send Alert" to submit
+   - View confirmation page, record sent time
 
-## 📂 文件清单
+## 📂 File List
 
-### 新创建的文件：
+### Newly Created Files:
 ```
 src/app/
   ├── sos/
-  │   └── page.tsx                    # Emergency SOS入口页面
+  │   └── page.tsx                    # Emergency SOS entry page
   ├── userLogin/
-  │   └── page.tsx                    # Emergency Details表单页面
+  │   └── page.tsx                    # Emergency Details form page
   └── confirmation/
-      └── page.tsx                    # 救援确认页面
+      └── page.tsx                    # Rescue confirmation page
 
 public/
-  └── ambulance.svg                   # 救护车矢量图
+  └── ambulance.svg                   # Ambulance vector graphic
 ```
 
-### 修改的文件：
+### Modified Files:
 ```
 src/app/
-  ├── page.tsx                        # 主页（添加SOS按钮）
-  └── globals.css                     # 全局样式（Google Places样式）
+  ├── page.tsx                        # Homepage (added SOS button)
+  └── globals.css                     # Global styles (Google Places styles)
 ```
 
-## 🔧 技术细节
+## 🔧 Technical Details
 
-### API 依赖
+### API Dependencies
 - Google Maps JavaScript API
 - Google Places API
 - Google Geocoding API
 
-### 需要的环境变量
+### Required Environment Variables
 ```bash
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=你的Google Maps API Key
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your Google Maps API Key
 ```
 
-### Map组件Props (已更新)
+### Map Component Props (Updated)
 ```typescript
 <Map 
-  key={1}                           // number类型，必需
+  key={1}                           // number type, required
   editMode="view"                   // 'view' | 'edit'
-  mapMode="original"                // 'original' | 其他模式
-  getFeatures={() => []}            // 必需
-  setFeatures={() => {}}            // 必需
-  getTextLabels={() => []}          // 必需
-  setTextLabels={() => {}}          // 必需
+  mapMode="original"                // 'original' | other modes
+  getFeatures={() => []}            // required
+  setFeatures={() => {}}            // required
+  getTextLabels={() => []}          // required
+  setTextLabels={() => {}}          // required
 />
 ```
 
-## ✨ 新功能亮点
+## ✨ New Feature Highlights
 
-### 1. **智能地址搜索**
-- Google Places Autocomplete集成
-- 实时搜索建议
-- 支持全球地址和地标
+### 1. **Smart Address Search**
+- Google Places Autocomplete integration
+- Real-time search suggestions
+- Support for global addresses and landmarks
 
-### 2. **双向协同**
-- 地址 ↔ 经纬度自动转换
-- 无需手动操作
-- 500ms防抖优化性能
+### 2. **Two-way Coordination**
+- Address ↔ Coordinates automatic conversion
+- No manual operation needed
+- 500ms debounce for performance optimization
 
-### 3. **三种定位方式**
-- 地址搜索（最快速）
-- GPS自动定位（最准确）
-- 手动输入坐标（最灵活）
+### 3. **Three Location Methods**
+- Address search (fastest)
+- GPS auto-location (most accurate)
+- Manual coordinate input (most flexible)
 
-### 4. **完全响应式**
-- 移动端友好
-- 触摸优化
-- 深色主题统一
+### 4. **Fully Responsive**
+- Mobile-friendly
+- Touch-optimized
+- Unified dark theme
 
-## 🎯 测试建议
+## 🎯 Testing Suggestions
 
-1. **测试SOS流程**：
-   - 点击主页的 "🚨 Emergency SOS" 按钮
-   - 点击 "HELP!" 按钮
-   - 尝试三种定位方式
-   - 提交表单查看确认页面
+1. **Test SOS Flow**:
+   - Click "🚨 Emergency SOS" button on homepage
+   - Click "HELP!" button
+   - Try all three location methods
+   - Submit form and view confirmation page
 
-2. **测试地址搜索**：
-   - 输入 "Melbourne CBD"
-   - 输入 "Sydney Opera House"
-   - 从下拉列表选择地址
+2. **Test Address Search**:
+   - Enter "Melbourne CBD"
+   - Enter "Sydney Opera House"
+   - Select address from dropdown
 
-3. **测试坐标转地址**：
-   - 修改Latitude为 -33.8688
-   - 修改Longitude为 151.2093
-   - 等待0.5秒查看地址自动更新
+3. **Test Coordinates to Address**:
+   - Change Latitude to -33.8688
+   - Change Longitude to 151.2093
+   - Wait 0.5 seconds to see address update automatically
 
-## 📱 页面截图说明
+## 📱 Page Screenshot Description
 
-### 按钮布局（登录后）
+### Button Layout (After Login)
 ```
 [Logo] Disaster Response Australia
                          [Management] [🚨 Emergency SOS] [Sign Out]
 ```
 
-### 按钮布局（未登录）
+### Button Layout (Not Logged In)
 ```
 [Logo] Disaster Response Australia
                          [🚨 Emergency SOS] [Sign In / Sign Up]
@@ -212,6 +212,6 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=你的Google Maps API Key
 
 ---
 
-**恢复完成时间**: 2025-10-20  
-**版本**: 2.0  
-**状态**: ✅ 全部完成，无错误
+**Restoration Completion Time**: 2025-10-20  
+**Version**: 2.0  
+**Status**: ✅ All completed, no errors
