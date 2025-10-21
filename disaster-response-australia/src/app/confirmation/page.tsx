@@ -4,20 +4,6 @@ import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-// Helper function to get token from cookie
-function getTokenFromCookie(): string | null {
-  if (typeof document === 'undefined') return null;
-
-  const cookies = document.cookie.split(';');
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split('=');
-    if (name === 'drau_id_token') {
-      return value;
-    }
-  }
-  return null;
-}
-
 interface EmergencyData {
   location: string;
   title: string;
@@ -75,15 +61,6 @@ export default function Confirmation() {
 
       const emergencyData: EmergencyData = JSON.parse(emergencyDataStr);
 
-      // Get auth token
-      const token = getTokenFromCookie();
-      
-      if (!token) {
-        setSubmitError("Authentication required. Please login first.");
-        setIsSubmitting(false);
-        return;
-      }
-
       // Prepare the API request body according to SurvivorReportCreateReq schema
       const requestBody = {
         title: emergencyData.title || null,
@@ -96,14 +73,13 @@ export default function Confirmation() {
         address: emergencyData.location || null
       };
 
-      // Call the API
+      // Call the API (no authentication required for survivor reports)
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/survivor_reports`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify(requestBody),
         }
